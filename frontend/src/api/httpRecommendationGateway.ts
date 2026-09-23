@@ -9,6 +9,7 @@ import {
   isAbortError,
 } from "./errors";
 import type { RecommendationGateway } from "./recommendationGateway";
+import type { GatewayOptions } from "./recommendationGateway";
 import { alternativesResponseSchema, errorResponseSchema, searchResponseSchema } from "./schemas";
 
 function recommendationUrl(baseUrl: string, suffix = ""): string {
@@ -25,7 +26,7 @@ export class HttpRecommendationGateway implements RecommendationGateway {
     private readonly timeoutMs = 10_000,
   ) {}
 
-  async recommend(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<SearchResponse> {
+  async recommend(request: SearchRequest, options?: GatewayOptions): Promise<SearchResponse> {
     const controller = new AbortController();
     let timedOut = false;
     const onExternalAbort = () => controller.abort();
@@ -38,7 +39,7 @@ export class HttpRecommendationGateway implements RecommendationGateway {
     try {
       const response = await fetch(recommendationUrl(this.baseUrl), {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json", "Accept-Language": options?.locale ?? "ru" },
         body: JSON.stringify(request),
         signal: controller.signal,
       });
@@ -80,7 +81,7 @@ export class HttpRecommendationGateway implements RecommendationGateway {
     }
   }
 
-  async getAlternatives(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<AlternativesResponse> {
+  async getAlternatives(request: SearchRequest, options?: GatewayOptions): Promise<AlternativesResponse> {
     const controller = new AbortController();
     let timedOut = false;
     const onExternalAbort = () => controller.abort();
@@ -93,7 +94,7 @@ export class HttpRecommendationGateway implements RecommendationGateway {
     try {
       const response = await fetch(recommendationUrl(this.baseUrl, "/alternatives"), {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json", "Accept-Language": options?.locale ?? "ru" },
         body: JSON.stringify(request),
         signal: controller.signal,
       });

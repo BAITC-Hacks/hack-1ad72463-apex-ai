@@ -1,6 +1,7 @@
 import type { AlternativesResponse, Recommendation, SearchMetadata, SearchRequest, SearchResponse } from "./contracts";
 import { CatalogUnavailableError, ValidationApiError } from "./errors";
 import type { RecommendationGateway } from "./recommendationGateway";
+import type { GatewayOptions } from "./recommendationGateway";
 import { alternativesResponseSchema, searchResponseSchema } from "./schemas";
 
 export type MockFailure = "none" | "validation" | "catalog-unavailable";
@@ -154,7 +155,7 @@ const alternativesFixtures = new Map<string, AlternativesResponse>([
 export class MockRecommendationGateway implements RecommendationGateway {
   constructor(private readonly failure: MockFailure = "none") {}
 
-  async recommend(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<SearchResponse> {
+  async recommend(request: SearchRequest, options?: GatewayOptions): Promise<SearchResponse> {
     if (options?.signal?.aborted) throw new DOMException("Aborted", "AbortError");
     if (this.failure === "validation") {
       throw new ValidationApiError([{ field: "date", code: "DATE_OUT_OF_RANGE", message: "Дата вне календарного окна." }]);
@@ -168,7 +169,7 @@ export class MockRecommendationGateway implements RecommendationGateway {
     return searchResponseSchema.parse(fixture) as SearchResponse;
   }
 
-  async getAlternatives(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<AlternativesResponse> {
+  async getAlternatives(request: SearchRequest, options?: GatewayOptions): Promise<AlternativesResponse> {
     if (options?.signal?.aborted) throw new DOMException("Aborted", "AbortError");
     const fixture = alternativesFixtures.get(fixtureKey(request)) ?? { alternatives: [] };
     return alternativesResponseSchema.parse(fixture) as AlternativesResponse;

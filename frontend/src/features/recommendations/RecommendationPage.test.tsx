@@ -1,10 +1,11 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { AlternativesResponse, SearchRequest, SearchResponse } from "../../api/contracts";
 import { CatalogUnavailableError, ValidationApiError } from "../../api/errors";
 import { MockRecommendationGateway, mockFixtures } from "../../api/mockRecommendationGateway";
 import type { RecommendationGateway } from "../../api/recommendationGateway";
+import { LocaleProvider } from "../../i18n/LocaleContext";
 import { RecommendationPage } from "./RecommendationPage";
 
 class FixedGateway implements RecommendationGateway {
@@ -64,6 +65,8 @@ async function submit(gateway: RecommendationGateway) {
 }
 
 describe("RecommendationPage", () => {
+  beforeEach(() => window.localStorage.clear());
+
   it("renders the complete recommendation form", () => {
     render(<RecommendationPage gateway={new MockRecommendationGateway()} />);
     expect(screen.getByRole("combobox", { name: /Город/ })).toBeInTheDocument();
@@ -210,5 +213,17 @@ describe("RecommendationPage", () => {
     await act(async () => { first.resolve(budgetAlternative); });
     expect(screen.queryByText("до 1 250 000 ₸")).not.toBeInTheDocument();
     expect(screen.getByText("21 декабря")).toBeInTheDocument();
+  });
+
+  it("does not translate backend explanations in the frontend", async () => {
+    window.localStorage.setItem("apex-match-locale", "en");
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider>
+        <RecommendationPage gateway={new FixedGateway(mockFixtures.popular)} />
+      </LocaleProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Find contractors" }));
+    expect(await screen.findByText(mockFixtures.popular.results[0]!.explanation)).toBeInTheDocument();
   });
 });
