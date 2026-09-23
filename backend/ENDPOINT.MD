@@ -211,3 +211,58 @@ hackalem_http_duration_seconds{quantile="0.95"} 0.009
 Отправьте `Origin` из `CORS_ORIGINS` на один из зарегистрированных путей. Ответ: **204**, без тела, `Access-Control-Allow-Origin` с точным origin, `Access-Control-Allow-Methods` с методом соответствующего пути и `OPTIONS`, `Access-Control-Allow-Headers: Content-Type`.
 
 Обычные запросы с разрешённым Origin получают `Access-Control-Allow-Origin` и `Access-Control-Expose-Headers: X-Request-ID`. CORS не является авторизацией; этот MVP предоставляет публичный API чтения и подбора.
+
+## POST /api/recommendations/alternatives
+
+Принимает тот же JSON, Content-Type и правила валидации, что `/api/recommendations`.
+Исходная рекомендация и все кандидаты вычисляются существующим matching engine
+на одном snapshot, загруженном один раз за HTTP-запрос. Схема старого endpoint не меняется.
+
+```json
+{
+  "alternatives": [
+    {"type":"BUDGET","current_budget_kzt":100000,"suggested_budget_kzt":650000,"eligible_count":1}
+  ]
+}
+```
+
+Максимум две независимые альтернативы, всегда BUDGET перед DATE:
+
+- BUDGET меняет только `budget_kzt`: минимальная цена из каталога выше текущего
+  бюджета, при которой весь исходный запрос получает `MATCHES_FOUND`.
+- DATE меняет только `date`: ближайшая рабочая дата в `metadata.calendar_window`.
+  При равном расстоянии предпочтительна более поздняя дата. Поля элемента:
+  `type`, `current_date`, `suggested_date`, `distance_days` (> 0), `eligible_count`.
+
+`eligible_count` берётся из фактической рекомендации для конкретной альтернативы,
+а не из числа показанных карточек. Изменения бюджета и даты не объединяются.
+Если исходный статус не `NO_MATCH` или ни одно одиночное изменение не помогает,
+возвращается HTTP 200 и `{"alternatives":[]}`. Другие поля запроса не ослабляются.
+
+Ошибки используют общий формат `error`: 400 `INVALID_JSON`, 422 `VALIDATION_ERROR`,
+503 `CATALOG_UNAVAILABLE`; ограничения размера, Content-Type, методов и CORS
+совпадают с обычным endpoint. Same-origin `https://testrr.shop` не требует
+добавления отдельного CORS-разрешения.
+
+## Язык ответов: Accept-Language
+
+`Accept-Language: ru|kk|en` выбирает язык системных `message`, `explanation`
+и сообщений validation errors. Поддерживаются региональные варианты (`ru-RU`,
+`kk-KZ`, `en-US`, `en-GB`). Используется первый поддерживаемый диапазон в порядке
+заголовка; диапазоны с `q=0` или некорректным q пропускаются. Без поддерживаемого
+языка используется русский. Ответ содержит `Content-Language: ru|kk|en` и
+`Vary: Accept-Language`, сохраняя также существующий `Vary: Origin`.
+
+JSON запроса и ответа не меняется. `request.language` по-прежнему означает язык
+работы подрядчика и принимает canonical значения `русский`, `казахский`,
+`английский`; UI locale через JSON не передаётся. Locale не влияет на фильтрацию,
+ранжирование, ID, diagnostics или metadata. Старые Go `Validate` / `Recommend`
+сохраняют RU; версии `ValidateLocalized` / `RecommendLocalized` принимают locale.
+
+Исходные `Fact.Text` в EN/KK не переводятся и помечаются как
+`Original profile note:` / `Профильдегі бастапқы мәтін:`. Тексты
+`conditions_to_confirm` сохраняются без изменений. Имена городов и категории
+остаются canonical; известные форматы и языки в explanation переводятся.
+
+`/api/recommendations/alternatives` использует те же заголовки и локализованные
+ошибки, при этом структурный JSON alternatives одинаков для всех locales.

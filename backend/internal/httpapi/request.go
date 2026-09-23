@@ -8,11 +8,16 @@ import (
 	"sort"
 
 	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/domain"
+	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/i18n"
 )
 
 // decodeRequest rejects duplicate keys, trailing JSON, null required fields and
 // fractional/exponent budgets. A map alone would silently accept duplicate keys.
 func decodeRequest(data []byte) (domain.Request, []domain.FieldError, error) {
+	return decodeRequestLocalized(data, i18n.LocaleRU)
+}
+
+func decodeRequestLocalized(data []byte, locale i18n.Locale) (domain.Request, []domain.FieldError, error) {
 	var r domain.Request
 	errs := []domain.FieldError{}
 	d := json.NewDecoder(bytes.NewReader(data))
@@ -38,7 +43,7 @@ func decodeRequest(data []byte) (domain.Request, []domain.FieldError, error) {
 			return r, errs, err
 		}
 		if _, ok := fields[key]; ok {
-			errs = append(errs, domain.FieldError{Field: key, Code: "INVALID_TYPE", Message: "Поле не должно повторяться."})
+			errs = append(errs, domain.FieldError{Field: key, Code: "INVALID_TYPE", Message: i18n.Message(locale, "duplicate_field")})
 		}
 		fields[key] = raw
 	}
@@ -53,7 +58,7 @@ func decodeRequest(data []byte) (domain.Request, []domain.FieldError, error) {
 	for _, key := range []string{"city", "date", "event_format", "category", "budget_kzt"} {
 		raw, ok := fields[key]
 		if !ok || bytes.Equal(raw, []byte("null")) {
-			errs = append(errs, domain.FieldError{Field: key, Code: "REQUIRED", Message: "Укажите обязательное поле."})
+			errs = append(errs, domain.FieldError{Field: key, Code: "REQUIRED", Message: i18n.Message(locale, "required")})
 		}
 	}
 	keys := make([]string, 0, len(fields))
@@ -64,11 +69,11 @@ func decodeRequest(data []byte) (domain.Request, []domain.FieldError, error) {
 	for _, key := range keys {
 		ptr, ok := known[key]
 		if !ok {
-			errs = append(errs, domain.FieldError{Field: key, Code: "UNKNOWN_FIELD", Message: "Неизвестное поле."})
+			errs = append(errs, domain.FieldError{Field: key, Code: "UNKNOWN_FIELD", Message: i18n.Message(locale, "unknown_field")})
 			continue
 		}
 		if err = json.Unmarshal(fields[key], ptr); err != nil {
-			errs = append(errs, domain.FieldError{Field: key, Code: "INVALID_TYPE", Message: "Неверный тип или недопустимый размер числа."})
+			errs = append(errs, domain.FieldError{Field: key, Code: "INVALID_TYPE", Message: i18n.Message(locale, "invalid_type")})
 		}
 	}
 	return r, errs, nil

@@ -127,6 +127,52 @@ func TestPostgresIntegration(t *testing.T) {
 	if e = request(); e != nil {
 		t.Fatal(e)
 	}
+	var invariantJSON string
+	for _, locale := range []string{"ru", "kk", "en"} {
+		req, err := http.NewRequest("POST", server.URL+"/api/recommendations", strings.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept-Language", locale)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var localized domain.Response
+		err = json.NewDecoder(resp.Body).Decode(&localized)
+		resp.Body.Close()
+		if err != nil || resp.StatusCode != 200 || resp.Header.Get("Content-Language") != locale {
+			t.Fatalf("localized PostgreSQL response: %s %d %v", locale, resp.StatusCode, err)
+		}
+		localized.Message = ""
+		for i := range localized.Results {
+			localized.Results[i].Explanation = ""
+		}
+		b, err := json.Marshal(localized)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if locale == "ru" {
+			invariantJSON = string(b)
+		} else if string(b) != invariantJSON {
+			t.Fatalf("locale %s changed PostgreSQL matching results", locale)
+		}
+	}
+	for _, tt := range []struct{ body, want string }{
+		{strings.Replace(body, "1000000", "100000", 1), `{"alternatives":[{"type":"BUDGET","current_budget_kzt":100000,"suggested_budget_kzt":650000,"eligible_count":1}]}`},
+		{strings.Replace(strings.Replace(body, "1000000", "650000", 1), "2026-11-14", "2026-09-24", 1), `{"alternatives":[{"type":"BUDGET","current_budget_kzt":650000,"suggested_budget_kzt":900000,"eligible_count":1},{"type":"DATE","current_date":"2026-09-24","suggested_date":"2026-09-25","distance_days":1,"eligible_count":1}]}`},
+	} {
+		resp, err := http.Post(server.URL+"/api/recommendations/alternatives", "application/json", strings.NewReader(tt.body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil || resp.StatusCode != 200 || strings.TrimSpace(string(got)) != tt.want {
+			t.Fatalf("imported catalog alternatives: HTTP %d %s (%v)", resp.StatusCode, got, err)
+		}
+	}
 	var wg sync.WaitGroup
 	errs := make(chan error, 5)
 	for worker := 0; worker < 4; worker++ {
@@ -178,6 +224,15 @@ func TestPostgresIntegration(t *testing.T) {
 		t.Fatal(e)
 	}
 	store.Close()
+	alternativeResp, err := http.Post(server.URL+"/api/recommendations/alternatives", "application/json", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	outageBody, err := io.ReadAll(alternativeResp.Body)
+	alternativeResp.Body.Close()
+	if err != nil || alternativeResp.StatusCode != 503 || strings.TrimSpace(string(outageBody)) != `{"error":{"code":"CATALOG_UNAVAILABLE","details":[]}}` {
+		t.Fatalf("alternatives database outage: HTTP %d %s (%v)", alternativeResp.StatusCode, outageBody, err)
+	}
 	resp, e = http.Get(server.URL + "/readyz")
 	if e != nil {
 		t.Fatal(e)

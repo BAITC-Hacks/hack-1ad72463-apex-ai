@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/domain"
+	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/i18n"
 	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/matching"
 )
 
@@ -73,6 +74,9 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Request-ID", id)
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Cache-Control", "no-store")
+	locale := i18n.ParseAcceptLanguage(strings.Join(r.Header.Values("Accept-Language"), ","))
+	w.Header().Set("Content-Language", string(locale))
+	w.Header().Add("Vary", "Accept-Language")
 	defer func() {
 		if recover() != nil {
 			a.logger.Error("request panic", "request_id", id)
@@ -95,7 +99,7 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Expose-Headers", "X-Request-ID")
 		}
 	}
-	routes := map[string]string{"/healthz": "GET", "/readyz": "GET", "/metrics": "GET", "/api/catalog/meta": "GET", "/api/recommendations": "POST"}
+	routes := map[string]string{"/healthz": "GET", "/readyz": "GET", "/metrics": "GET", "/api/catalog/meta": "GET", "/api/recommendations": "POST", "/api/recommendations/alternatives": "POST"}
 	method, ok := routes[r.URL.Path]
 	if !ok {
 		fail(w, 404, "NOT_FOUND", nil)
@@ -128,7 +132,7 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	var req domain.Request
 	validationStart := time.Now()
-	if r.URL.Path == "/api/recommendations" {
+	if r.URL.Path == "/api/recommendations" || r.URL.Path == "/api/recommendations/alternatives" {
 		media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		if err != nil || media != "application/json" {
 			fail(w, 415, "UNSUPPORTED_MEDIA_TYPE", nil)
@@ -145,7 +149,7 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var fields []domain.FieldError
-		req, fields, err = decodeRequest(body)
+		req, fields, err = decodeRequestLocalized(body, locale)
 		if err != nil {
 			fail(w, 400, "INVALID_JSON", nil)
 			return
@@ -165,14 +169,18 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 		write(w, 200, map[string]any{"status": "ready", "catalog_count": len(snapshot.Vendors), "metadata": snapshot.Metadata})
 	case "/api/catalog/meta":
 		write(w, 200, catalogMeta(snapshot))
-	case "/api/recommendations":
-		if fields := matching.Validate(req, snapshot.Metadata.CalendarWindow); len(fields) > 0 {
+	case "/api/recommendations", "/api/recommendations/alternatives":
+		if fields := matching.ValidateLocalized(req, snapshot.Metadata.CalendarWindow, locale); len(fields) > 0 {
 			fail(w, 422, "VALIDATION_ERROR", fields)
+			return
+		}
+		if r.URL.Path == "/api/recommendations/alternatives" {
+			write(w, 200, matching.FindAlternatives(snapshot, req))
 			return
 		}
 		validationMS := float64(time.Since(validationStart).Microseconds()) / 1000
 		matchStart := time.Now()
-		response := matching.Recommend(snapshot, req)
+		response := matching.RecommendLocalized(snapshot, req, locale)
 		ids := []string{}
 		for _, v := range response.Results {
 			ids = append(ids, v.ID)

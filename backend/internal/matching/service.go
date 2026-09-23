@@ -1,43 +1,47 @@
 package matching
 
 import (
-	"fmt"
 	"math"
 	"slices"
 	"strings"
 
 	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/catalog"
 	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/domain"
+	"github.com/BAITC-Hacks/hack-1ad72463-apex-ai/backend/internal/i18n"
 )
 
 func Validate(r domain.Request, w domain.Window) []domain.FieldError {
+	return ValidateLocalized(r, w, i18n.LocaleRU)
+}
+
+func ValidateLocalized(r domain.Request, w domain.Window, locale i18n.Locale) []domain.FieldError {
 	errs := []domain.FieldError{}
 	add := func(field, code, msg string) {
 		errs = append(errs, domain.FieldError{Field: field, Code: code, Message: msg})
 	}
 	for _, x := range []struct{ k, v string }{{"city", r.City}, {"category", r.Category}, {"date", r.Date}, {"event_format", r.EventFormat}} {
 		if domain.Normalize(x.v) == "" {
-			add(x.k, "REQUIRED", "Укажите обязательное поле.")
+			add(x.k, "REQUIRED", i18n.Message(locale, "required"))
 		}
 	}
 	if r.Date != "" {
 		if !catalog.ValidDate(r.Date) {
-			add("date", "INVALID_DATE", "Используйте дату YYYY-MM-DD.")
+			add("date", "INVALID_DATE", i18n.Message(locale, "invalid_date"))
 		} else if r.Date < w.From || r.Date > w.To {
-			add("date", "DATE_OUT_OF_RANGE", fmt.Sprintf("Выберите дату с %s по %s включительно.", w.From, w.To))
+			add("date", "DATE_OUT_OF_RANGE", i18n.Message(locale, "date_range", w.From, w.To))
 		}
 	}
 	if domain.Normalize(r.EventFormat) != "" && !domain.Contains(domain.Formats, r.EventFormat) {
-		add("event_format", "INVALID_ENUM", "Неизвестный формат мероприятия.")
+		add("event_format", "INVALID_ENUM", i18n.Message(locale, "invalid_format"))
 	}
 	if r.Budget <= 0 {
-		add("budget_kzt", "OUT_OF_RANGE", "Бюджет должен быть целым числом больше нуля.")
+		add("budget_kzt", "OUT_OF_RANGE", i18n.Message(locale, "budget"))
 	}
 	if r.Duration != nil && (*r.Duration <= 0 || math.IsNaN(*r.Duration) || math.IsInf(*r.Duration, 0)) {
-		add("duration_hours", "OUT_OF_RANGE", "Длительность должна быть конечным числом больше нуля.")
+		add("duration_hours", "OUT_OF_RANGE", i18n.Message(locale, "duration"))
 	}
 	if r.Language != nil && !domain.Contains(domain.Languages, *r.Language) {
-		add("language", "INVALID_ENUM", "Допустимы русский, казахский, английский.")
+		add("language", "INVALID_ENUM", i18n.Message(locale, "language"))
 	}
 	return errs
 }
@@ -61,6 +65,11 @@ func value(s *string) string {
 }
 
 func Recommend(s domain.Snapshot, r domain.Request) domain.Response {
+	return RecommendLocalized(s, r, i18n.LocaleRU)
+}
+
+// RecommendLocalized changes presentation only; selection and ordering share one pipeline.
+func RecommendLocalized(s domain.Snapshot, r domain.Request, locale i18n.Locale) domain.Response {
 	out := domain.Response{Status: "NO_CATALOG", Results: []domain.Card{}, Metadata: s.Metadata, Diagnostics: domain.Diagnostics{ExcludedCounts: map[string]int{}, OmittedChecks: []string{}, AppliedOrder: []string{"price_from_kzt:asc", "id:asc"}}}
 	d := &out.Diagnostics
 	for _, code := range domain.Reasons {
@@ -104,78 +113,26 @@ func Recommend(s domain.Snapshot, r domain.Request) domain.Response {
 			}
 		}
 		card := domain.Card{ID: v.ID, Name: v.Name, City: v.City, Category: category, Price: v.Price, MaxHours: v.MaxHours, Synthetic: v.Synthetic, PriceImputed: v.PriceImputed, CityImputed: v.CityImputed}
-		card.Explanation, card.Conditions = explain(v, r, s.Facts)
+		card.Explanation, card.Conditions = explainLocalized(v, r, s.Facts, locale)
 		out.Results = append(out.Results, card)
 	}
 	d.ReturnedCount = len(out.Results)
 	switch {
 	case d.CatalogCount == 0:
-		out.Message = fmt.Sprintf("В каталоге нет категории «%s» в городе «%s». Измените город или категорию.", strings.TrimSpace(r.Category), strings.TrimSpace(r.City))
+		out.Message = i18n.Message(locale, "no_catalog", strings.TrimSpace(r.Category), strings.TrimSpace(r.City))
 	case d.EligibleCount == 0:
 		out.Status = "NO_MATCH"
-		out.Message = "Ни один подрядчик не соответствует условиям. " + exclusions(*d) + " Измените условия запроса."
+		out.Message = i18n.Message(locale, "no_match") + exclusionsLocalized(*d, locale) + i18n.Message(locale, "change_request")
 	default:
 		out.Status = "MATCHES_FOUND"
-		out.Message = fmt.Sprintf("Подходят %d подрядчика; показаны %d по стартовой цене, затем ID.", d.EligibleCount, d.ReturnedCount)
+		out.Message = i18n.Message(locale, "matches", d.EligibleCount, d.ReturnedCount)
 		if d.ReturnedCount < 3 {
 			if d.EligibleCount == d.CatalogCount {
-				out.Message += fmt.Sprintf(" В каталоге города и категории всего %d профиля.", d.CatalogCount)
+				out.Message += i18n.Message(locale, "small_catalog", d.CatalogCount)
 			} else {
-				out.Message += " " + exclusions(*d)
+				out.Message += " " + exclusionsLocalized(*d, locale)
 			}
 		}
 	}
 	return out
-}
-
-func exclusions(d domain.Diagnostics) string {
-	labels := []string{"не поддерживают формат", "стартовая цена выше бюджета", "не поддерживают язык", "превышена длительность", "заняты на выбранную дату"}
-	parts := []string{}
-	for i, k := range domain.Reasons {
-		if n := d.ExcludedCounts[k]; n > 0 {
-			parts = append(parts, fmt.Sprintf("%s: %d", labels[i], n))
-		}
-	}
-	return "Исключены по первой неподходящей проверке: " + strings.Join(parts, "; ") + "."
-}
-
-func explain(v domain.Vendor, r domain.Request, facts []domain.Fact) (string, []domain.Condition) {
-	price := fmt.Sprintf("стартовая цена %d ₸ укладывается в бюджет %d ₸", v.Price, r.Budget)
-	if v.Price == r.Budget {
-		price = fmt.Sprintf("стартовая цена %d ₸ равна бюджету", v.Price)
-	}
-	if v.PriceImputed {
-		price += " (оценка из датасета)"
-	}
-	parts := []string{fmt.Sprintf("Профиль поддерживает формат «%s» в городе %s", domain.Normalize(r.EventFormat), v.City), price}
-	if r.Language != nil {
-		parts = append(parts, "язык «"+domain.Normalize(*r.Language)+"» указан в профиле")
-	}
-	if r.Duration != nil {
-		if v.MaxHours == nil {
-			parts = append(parts, "ограничение часов для этой услуги неприменимо")
-		} else {
-			parts = append(parts, fmt.Sprintf("запрошено %g ч при лимите %g ч", *r.Duration, *v.MaxHours))
-		}
-	}
-	parts = append(parts, r.Date+" не отмечено занятым в календаре датасета")
-	text := strings.Join(parts, "; ") + "."
-	conditions := []domain.Condition{}
-	feature := ""
-	for _, f := range facts {
-		if f.VendorID != v.ID || f.ReviewStatus != "approved" || f.DescriptionHash != domain.Hash([]byte(v.Description)) || !strings.Contains(v.Description, f.Quote) {
-			continue
-		}
-		if f.Kind == "condition" {
-			conditions = append(conditions, domain.Condition{FactID: f.ID, Text: f.Text})
-		} else if f.Kind == "feature" && feature == "" {
-			feature = f.Text
-		}
-	}
-	if feature != "" {
-		text += " В описании отмечено: " + strings.TrimRight(feature, ". ") + "."
-	} else {
-		text += fmt.Sprintf("В профиле перечислены услуги: %s; языки: %s.", strings.Join(v.Categories, ", "), strings.Join(v.Languages, ", "))
-	}
-	return text, conditions
 }
