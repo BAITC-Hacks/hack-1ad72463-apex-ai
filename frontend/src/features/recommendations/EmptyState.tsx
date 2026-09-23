@@ -1,4 +1,5 @@
 import type { SearchAlternative, SearchResponse } from "../../api/contracts";
+import { useLocale } from "../../i18n/LocaleContext";
 import { AlternativeSuggestions } from "./AlternativeSuggestions";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 
@@ -10,14 +11,15 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ response, alternativesLoading, alternatives, onApplyAlternative }: EmptyStateProps) {
+  const { t } = useLocale();
   const noCatalog = response.status === "NO_CATALOG";
   return (
     <div className={`empty-state ${noCatalog ? "empty-catalog" : "empty-match"}`}>
       <div className="empty-icon" aria-hidden="true">{noCatalog ? "⌁" : "≋"}</div>
-      <p className="eyebrow">{noCatalog ? "Каталог" : "Условия поиска"}</p>
-      <h2>{noCatalog ? "В этом городе пока нет подрядчиков этой категории" : "Подрядчики есть, но никто не подходит под выбранные условия"}</h2>
-      <p>{noCatalog ? "Попробуйте изменить город или категорию." : response.message}</p>
-      {!noCatalog && <DiagnosticsPanel diagnostics={response.diagnostics} />}
+      <p className="eyebrow">{noCatalog ? t("empty.catalogEyebrow") : t("empty.matchEyebrow")}</p>
+      <h2>{noCatalog ? t("empty.catalogTitle") : t("empty.matchTitle")}</h2>
+      <p>{noCatalog ? t("empty.catalogCopy") : response.message}</p>
+      {!noCatalog && <DiagnosticsPanel diagnostics={response.diagnostics} mode="empty" />}
       {!noCatalog && (
         <AlternativeSuggestions
           loading={alternativesLoading}

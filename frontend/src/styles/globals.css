@@ -82,7 +82,11 @@ button:disabled, input:disabled, select:disabled { cursor: not-allowed; }
   font-family: Georgia, serif;
 }
 
-.topbar-badges, .card-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.topbar-actions, .topbar-badges, .card-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.topbar-actions { justify-content: flex-end; gap: 12px; }
+.locale-switcher { display: inline-flex; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.locale-button { min-width: 34px; min-height: 28px; padding: 3px 8px; color: var(--muted); background: transparent; border: 0; border-radius: 999px; font-size: 0.7rem; font-weight: 800; }
+.locale-button.active { color: white; background: var(--ink-green); }
 
 .badge {
   display: inline-flex;
@@ -189,19 +193,27 @@ main { padding-top: 38px; }
 .explanation { margin: 14px 0; color: #4f5955; font-size: 0.88rem; line-height: 1.62; }
 .conditions { margin-top: 15px; padding: 12px 14px; border-left: 3px solid #d7a44e; background: var(--warning-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
 .conditions p { margin: 0 0 5px; color: #74480d; font-size: 0.78rem; font-weight: 800; }
+.source-language-note { display: block; margin: -1px 0 7px; color: #876727; font-size: 0.68rem; }
 .conditions ul { margin: 0; padding-left: 17px; color: #765621; font-size: 0.78rem; line-height: 1.45; }
 
 .diagnostics { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-soft); overflow: hidden; }
 .diagnostics summary { padding: 14px 16px; color: #46514d; font-size: 0.83rem; font-weight: 760; cursor: pointer; }
 .diagnostics-content { padding: 0 16px 16px; }
-.diagnostics-totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 15px; }
-.diagnostics-totals div { padding: 10px; text-align: center; background: var(--surface); border-radius: var(--radius-sm); }
-.diagnostics-totals dt { color: var(--muted); font-size: 0.7rem; }
-.diagnostics-totals dd { margin: 2px 0 0; color: var(--ink-green); font-size: 1.25rem; font-weight: 800; }
-.diagnostics-label { margin: 0 0 6px; color: var(--muted); font-size: 0.72rem; font-weight: 760; text-transform: uppercase; }
-.diagnostic-reasons ul { margin: 0; padding: 0; list-style: none; }
-.diagnostic-reasons li { display: flex; justify-content: space-between; gap: 15px; padding: 5px 0; color: #59625e; font-size: 0.78rem; }
-.order-note { margin: 12px 0 0; color: var(--muted); font-size: 0.7rem; overflow-wrap: anywhere; }
+.diagnostics-heading h3 { margin: 2px 0 4px; color: var(--ink-green); font-family: Georgia, serif; font-size: 1.25rem; font-weight: 600; }
+.diagnostics-heading p { margin: 0; color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+.funnel-list { display: grid; gap: 7px; margin: 16px 0; padding: 0; list-style: none; }
+.funnel-step { position: relative; padding: 8px 10px; background: var(--surface); border-radius: 8px; }
+.funnel-step:not(:last-child)::after { content: "↓"; position: absolute; left: 50%; bottom: -10px; z-index: 1; color: #aaa69d; font-size: 0.65rem; }
+.funnel-step-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.funnel-step-heading span { color: #505b57; font-size: 0.76rem; font-weight: 700; }
+.funnel-step-heading strong { color: var(--ink-green); font-size: 1.15rem; }
+.funnel-track { height: 5px; margin-top: 5px; overflow: hidden; background: #e7e3dc; border-radius: 999px; }
+.funnel-track span { display: block; height: 100%; background: var(--success); border-radius: inherit; }
+.funnel-step small { display: block; margin-top: 3px; color: var(--accent-dark); font-size: 0.66rem; }
+.funnel-step.omitted { background: #f1efea; }
+.funnel-step.omitted .funnel-step-heading span { color: var(--muted); font-style: italic; }
+.diagnostics-result { margin: 0; color: #46514d; font-size: 0.78rem; }
+.order-note { margin: 7px 0 0; color: var(--muted); font-size: 0.72rem; overflow-wrap: anywhere; }
 
 .empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 22px; border-radius: 50%; color: var(--accent-dark); background: var(--accent-soft); font-size: 1.45rem; font-weight: 850; }
 .empty-icon.danger { color: var(--danger); background: var(--danger-soft); }
@@ -258,6 +270,7 @@ main { padding-top: 38px; }
 @media (max-width: 560px) {
   .app-shell { padding-inline: 14px; }
   .topbar { min-height: 66px; }
+  .topbar-actions { gap: 7px; }
   .topbar-badges .badge-neutral { display: none; }
   .badge { font-size: 0.66rem; }
   .intro { margin-bottom: 22px; }
@@ -267,6 +280,5 @@ main { padding-top: 38px; }
   .contractor-card { grid-template-columns: 1fr; padding: 17px; }
   .contractor-heading { flex-direction: column; }
   .results-intro h2 { font-size: 1.75rem; }
-  .diagnostics-totals { grid-template-columns: 1fr; }
   .alternatives-grid { grid-template-columns: 1fr; }
 }

@@ -10,6 +10,7 @@ import {
   isAbortError,
 } from "../../api/errors";
 import type { RecommendationGateway } from "../../api/recommendationGateway";
+import { useLocale } from "../../i18n/LocaleContext";
 import { ErrorState } from "./ErrorState";
 import type { TechnicalErrorKind } from "./ErrorState";
 import { LoadingState } from "./LoadingState";
@@ -24,6 +25,7 @@ interface RecommendationPageProps {
 const knownFields = new Set<keyof FormValues>(["city", "category", "event_format", "date", "budget_kzt", "language", "duration_hours"]);
 
 export function RecommendationPage({ gateway }: RecommendationPageProps) {
+  const { locale, t } = useLocale();
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -50,7 +52,7 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
     setAlternativesLoading(true);
 
     try {
-      const result = await gateway.getAlternatives(request, { signal: controller.signal });
+      const result = await gateway.getAlternatives(request, { signal: controller.signal, locale });
       if (sequence === alternativesSequence.current) setAlternatives(result.alternatives);
     } catch {
       if (sequence === alternativesSequence.current) setAlternatives([]);
@@ -77,7 +79,7 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
     setAlternatives([]);
 
     try {
-      const nextResponse = await gateway.recommend(request, { signal: controller.signal });
+      const nextResponse = await gateway.recommend(request, { signal: controller.signal, locale });
       if (sequence === requestSequence.current) {
         setResponse(nextResponse);
         if (nextResponse.status === "NO_MATCH") void loadAlternatives(request);
@@ -92,7 +94,7 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
           else general.push(detail.message);
         }
         setFieldErrors(nextFieldErrors);
-        setValidationNotice(general[0] ?? "Проверьте отмеченные поля и повторите запрос.");
+        setValidationNotice(general[0] ?? t("validation.default"));
       } else if (error instanceof CatalogUnavailableError) {
         setTechnicalError("catalog");
       } else if (error instanceof NetworkApiError || error instanceof TimeoutApiError) {
@@ -126,9 +128,9 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
   return (
     <main id="main">
       <section className="intro">
-        <p className="eyebrow">Подбор event-подрядчиков</p>
-        <h1>Найдите подходящего подрядчика</h1>
-        <p>Укажите параметры мероприятия — мы покажем до трёх подходящих вариантов и объясним выбор.</p>
+        <p className="eyebrow">{t("intro.eyebrow")}</p>
+        <h1>{t("intro.title")}</h1>
+        <p>{t("intro.copy")}</p>
       </section>
 
       <div className="workspace">
@@ -139,12 +141,12 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
           onFieldChange={(field) => setFieldErrors((current) => ({ ...current, [field]: undefined }))}
           onSubmit={(request) => void recommend(request)}
         />
-        <section className="results-card" aria-label="Результаты поиска" aria-live="polite" aria-busy={loading}>
+        <section className="results-card" aria-label={t("results.aria")} aria-live="polite" aria-busy={loading}>
           {loading ? <LoadingState /> : technicalError ? <ErrorState kind={technicalError} onRetry={retry} /> : validationNotice ? (
             <div className="validation-state" role="alert">
               <div className="empty-icon danger" aria-hidden="true">!</div>
-              <p className="eyebrow">Проверьте форму</p>
-              <h2>Некоторые параметры не приняты</h2>
+              <p className="eyebrow">{t("validation.eyebrow")}</p>
+              <h2>{t("validation.title")}</h2>
               <p>{validationNotice}</p>
             </div>
           ) : (
@@ -157,7 +159,7 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
           )}
         </section>
       </div>
-      <p className="disclaimer">Результат основан на данных каталога. Стартовая цена не является итоговой сметой, а доступность требует подтверждения у подрядчика.</p>
+      <p className="disclaimer">{t("disclaimer")}</p>
     </main>
   );
 }
