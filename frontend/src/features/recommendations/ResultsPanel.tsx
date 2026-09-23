@@ -1,4 +1,6 @@
 import type { SearchAlternative, SearchResponse } from "../../api/contracts";
+import { useLocale } from "../../i18n/LocaleContext";
+import { formatResultSummary } from "../../i18n/format";
 import { ContractorCard } from "./ContractorCard";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { EmptyState } from "./EmptyState";
@@ -10,21 +12,15 @@ interface ResultsPanelProps {
   onApplyAlternative: (alternative: SearchAlternative) => void;
 }
 
-function resultSummary(response: SearchResponse): string {
-  const { eligible_count, returned_count } = response.diagnostics;
-  if (eligible_count === 1) return "Подходит 1 подрядчик";
-  if (eligible_count > returned_count) return `Подходят ${eligible_count} подрядчика — показываем первые ${returned_count}`;
-  return `Подходят ${eligible_count} подрядчика`;
-}
-
 export function ResultsPanel({ response, alternativesLoading, alternatives, onApplyAlternative }: ResultsPanelProps) {
+  const { locale, t } = useLocale();
   if (!response) {
     return (
       <div className="idle-state">
         <div className="idle-orbit" aria-hidden="true"><span>A</span></div>
-        <p className="eyebrow">Персональный подбор</p>
-        <h2>Здесь появятся рекомендации</h2>
-        <p>Заполните параметры или выберите быстрый сценарий. Мы покажем до трёх вариантов и объясним результат.</p>
+        <p className="eyebrow">{t("results.idleEyebrow")}</p>
+        <h2>{t("results.idleTitle")}</h2>
+        <p>{t("results.idleCopy")}</p>
       </div>
     );
   }
@@ -44,16 +40,16 @@ export function ResultsPanel({ response, alternativesLoading, alternatives, onAp
     <div className="results-success">
       <div className="results-intro">
         <div>
-          <p className="eyebrow">Результат подбора</p>
-          <h2>Нашли подходящие варианты</h2>
-          <p>{resultSummary(response)}</p>
+          <p className="eyebrow">{t("results.eyebrow")}</p>
+          <h2>{t("results.title")}</h2>
+          <p>{formatResultSummary(response.diagnostics.eligible_count, response.diagnostics.returned_count, locale)}</p>
         </div>
-        <span className="success-mark" aria-label="Поиск завершён">✓</span>
+        <span className="success-mark" aria-label={t("results.successAria")}>✓</span>
       </div>
       <div className="contractor-list">
         {response.results.map((contractor, index) => <ContractorCard contractor={contractor} index={index} key={contractor.id} />)}
       </div>
-      <DiagnosticsPanel diagnostics={response.diagnostics} />
+      <DiagnosticsPanel diagnostics={response.diagnostics} mode="matches" />
     </div>
   );
 }
