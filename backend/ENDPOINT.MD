@@ -211,3 +211,35 @@ hackalem_http_duration_seconds{quantile="0.95"} 0.009
 Отправьте `Origin` из `CORS_ORIGINS` на один из зарегистрированных путей. Ответ: **204**, без тела, `Access-Control-Allow-Origin` с точным origin, `Access-Control-Allow-Methods` с методом соответствующего пути и `OPTIONS`, `Access-Control-Allow-Headers: Content-Type`.
 
 Обычные запросы с разрешённым Origin получают `Access-Control-Allow-Origin` и `Access-Control-Expose-Headers: X-Request-ID`. CORS не является авторизацией; этот MVP предоставляет публичный API чтения и подбора.
+
+## POST /api/recommendations/alternatives
+
+Принимает тот же JSON, Content-Type и правила валидации, что `/api/recommendations`.
+Исходная рекомендация и все кандидаты вычисляются существующим matching engine
+на одном snapshot, загруженном один раз за HTTP-запрос. Схема старого endpoint не меняется.
+
+```json
+{
+  "alternatives": [
+    {"type":"BUDGET","current_budget_kzt":100000,"suggested_budget_kzt":650000,"eligible_count":1}
+  ]
+}
+```
+
+Максимум две независимые альтернативы, всегда BUDGET перед DATE:
+
+- BUDGET меняет только `budget_kzt`: минимальная цена из каталога выше текущего
+  бюджета, при которой весь исходный запрос получает `MATCHES_FOUND`.
+- DATE меняет только `date`: ближайшая рабочая дата в `metadata.calendar_window`.
+  При равном расстоянии предпочтительна более поздняя дата. Поля элемента:
+  `type`, `current_date`, `suggested_date`, `distance_days` (> 0), `eligible_count`.
+
+`eligible_count` берётся из фактической рекомендации для конкретной альтернативы,
+а не из числа показанных карточек. Изменения бюджета и даты не объединяются.
+Если исходный статус не `NO_MATCH` или ни одно одиночное изменение не помогает,
+возвращается HTTP 200 и `{"alternatives":[]}`. Другие поля запроса не ослабляются.
+
+Ошибки используют общий формат `error`: 400 `INVALID_JSON`, 422 `VALIDATION_ERROR`,
+503 `CATALOG_UNAVAILABLE`; ограничения размера, Content-Type, методов и CORS
+совпадают с обычным endpoint. Same-origin `https://testrr.shop` не требует
+добавления отдельного CORS-разрешения.

@@ -95,7 +95,7 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Expose-Headers", "X-Request-ID")
 		}
 	}
-	routes := map[string]string{"/healthz": "GET", "/readyz": "GET", "/metrics": "GET", "/api/catalog/meta": "GET", "/api/recommendations": "POST"}
+	routes := map[string]string{"/healthz": "GET", "/readyz": "GET", "/metrics": "GET", "/api/catalog/meta": "GET", "/api/recommendations": "POST", "/api/recommendations/alternatives": "POST"}
 	method, ok := routes[r.URL.Path]
 	if !ok {
 		fail(w, 404, "NOT_FOUND", nil)
@@ -128,7 +128,7 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	var req domain.Request
 	validationStart := time.Now()
-	if r.URL.Path == "/api/recommendations" {
+	if r.URL.Path == "/api/recommendations" || r.URL.Path == "/api/recommendations/alternatives" {
 		media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		if err != nil || media != "application/json" {
 			fail(w, 415, "UNSUPPORTED_MEDIA_TYPE", nil)
@@ -165,9 +165,13 @@ func (a *API) serve(rw http.ResponseWriter, r *http.Request) {
 		write(w, 200, map[string]any{"status": "ready", "catalog_count": len(snapshot.Vendors), "metadata": snapshot.Metadata})
 	case "/api/catalog/meta":
 		write(w, 200, catalogMeta(snapshot))
-	case "/api/recommendations":
+	case "/api/recommendations", "/api/recommendations/alternatives":
 		if fields := matching.Validate(req, snapshot.Metadata.CalendarWindow); len(fields) > 0 {
 			fail(w, 422, "VALIDATION_ERROR", fields)
+			return
+		}
+		if r.URL.Path == "/api/recommendations/alternatives" {
+			write(w, 200, matching.FindAlternatives(snapshot, req))
 			return
 		}
 		validationMS := float64(time.Since(validationStart).Microseconds()) / 1000
