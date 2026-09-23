@@ -20,6 +20,7 @@ import (
 var migrations embed.FS
 
 var ErrUnavailable = errors.New("catalog unavailable")
+var ErrConflict = errors.New("catalog changed; reload before saving")
 
 type Store struct{ Pool *pgxpool.Pool }
 
@@ -78,6 +79,9 @@ func (s *Store) Migrate(ctx context.Context) error {
 
 func contentHash(s domain.Snapshot) string { b, _ := json.Marshal(s); return domain.Hash(b) }
 
+// Revision identifies the complete current snapshot for optimistic concurrency.
+func Revision(s domain.Snapshot) string { return contentHash(s) }
+
 // Replace validates before starting a transaction and publishes all rows atomically.
 func (s *Store) Replace(ctx context.Context, snapshot domain.Snapshot) error {
 	if err := catalog.Validate(snapshot); err != nil {
@@ -93,6 +97,14 @@ func (s *Store) Replace(ctx context.Context, snapshot domain.Snapshot) error {
 	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(79479002)"); err != nil {
 		return err
 	}
+	if err = writeSnapshot(ctx, tx, snapshot); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func writeSnapshot(ctx context.Context, tx pgx.Tx, snapshot domain.Snapshot) error {
+	var err error
 	if _, err = tx.Exec(ctx, "DELETE FROM vendors"); err != nil {
 		return err
 	}
@@ -116,7 +128,7 @@ func (s *Store) Replace(ctx context.Context, snapshot domain.Snapshot) error {
 	if err != nil {
 		return err
 	}
-	return tx.Commit(ctx)
+	return nil
 }
 
 // Snapshot reads a consistent revision even while another process imports a catalog.
@@ -127,6 +139,16 @@ func (s *Store) Snapshot(ctx context.Context) (domain.Snapshot, error) {
 		return snapshot, ErrUnavailable
 	}
 	defer tx.Rollback(ctx)
+	snapshot, err = readSnapshot(ctx, tx)
+	if err != nil {
+		return snapshot, err
+	}
+	return snapshot, tx.Commit(ctx)
+}
+
+func readSnapshot(ctx context.Context, tx pgx.Tx) (domain.Snapshot, error) {
+	var snapshot domain.Snapshot
+	var err error
 	var meta, facts []byte
 	var count int
 	var hash string
@@ -167,8 +189,40 @@ func (s *Store) Snapshot(ctx context.Context) (domain.Snapshot, error) {
 	if err = catalog.Validate(snapshot); err != nil {
 		return snapshot, ErrUnavailable
 	}
+	return snapshot, nil
+}
+
+// Update serializes with CSV Replace using the same advisory lock. ReadCommitted
+// intentionally reads after acquiring the lock, so concurrent edits cannot be lost.
+func (s *Store) Update(ctx context.Context, expected string, change func(*domain.Snapshot, pgx.Tx) error) (domain.Snapshot, error) {
+	var snapshot domain.Snapshot
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return snapshot, err
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(79479002)"); err != nil {
+		return snapshot, err
+	}
+	snapshot, err = readSnapshot(ctx, tx)
+	if err != nil {
+		return snapshot, err
+	}
+	if expected == "" || Revision(snapshot) != expected {
+		return snapshot, ErrConflict
+	}
+	if err = change(&snapshot, tx); err != nil {
+		return snapshot, err
+	}
+	if err = catalog.Validate(snapshot); err != nil {
+		return snapshot, err
+	}
+	slices.SortFunc(snapshot.Vendors, func(a, b domain.Vendor) int { return strings.Compare(a.ID, b.ID) })
+	if err = writeSnapshot(ctx, tx, snapshot); err != nil {
+		return snapshot, err
+	}
 	if err = tx.Commit(ctx); err != nil {
-		return snapshot, ErrUnavailable
+		return snapshot, err
 	}
 	return snapshot, nil
 }

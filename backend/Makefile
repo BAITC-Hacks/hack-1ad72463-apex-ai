@@ -11,10 +11,10 @@ deps: prepare
 	go mod download
 
 fmt:
-	gofmt -w cmd internal
+	gofmt -w cmd internal catalogadmin
 
 check: prepare
-	@test -z "$$(gofmt -l cmd internal)" || (gofmt -l cmd internal; exit 1)
+	@test -z "$$(gofmt -l cmd internal catalogadmin)" || (gofmt -l cmd internal catalogadmin; exit 1)
 	go vet ./...
 
 test: prepare

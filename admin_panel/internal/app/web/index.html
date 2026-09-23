@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apex AI — управление каталогом</title>
+  <link rel="stylesheet" href="/admin/style.css"><script defer src="/admin/app.js"></script>
+</head>
+<body>
+<div id="toast" class="toast" role="status" hidden></div>
+<section id="auth-view" class="auth-view">
+  <div class="auth-story"><a class="brand" href="/admin/"><span class="brand-mark">a</span>apex<span class="brand-ai">ai</span></a><div><span class="eyebrow">ПАНЕЛЬ КОМАНДЫ</span><h1>Хорошие события<br>начинаются с людей.</h1><p>Управляйте каталогом подрядчиков.<br>Проверяйте данные. Помогайте выбирать.</p></div><span class="story-footer">HackAlem · Каталог event-подрядчиков</span></div>
+  <div class="auth-content">
+    <form id="login-form" class="auth-card">
+      <span class="eyebrow muted">APEX AI / ADMIN</span><h2>С возвращением</h2><p class="muted">Войдите, чтобы управлять каталогом.</p>
+      <label>Логин<input name="username" value="admin" required autocomplete="username" maxlength="100"></label>
+      <label>Пароль<input name="password" type="password" required autocomplete="current-password" maxlength="72"></label>
+      <p id="login-error" class="form-error" role="alert"></p><button class="button primary full" type="submit">Войти в панель <span>→</span></button>
+      <p class="auth-note">Доступ только для администраторов проекта.</p>
+    </form>
+    <form id="password-form" class="auth-card" hidden>
+      <span class="eyebrow muted">БЕЗОПАСНОСТЬ</span><h2>Новый пароль</h2><p class="muted">Перед работой с каталогом замените временный пароль. Все текущие сессии будут завершены.</p>
+      <label>Текущий пароль<input name="current_password" type="password" required autocomplete="current-password"></label>
+      <label>Новый пароль<input name="new_password" type="password" minlength="12" required autocomplete="new-password"><small>От 12 символов, не более 72 байт.</small></label>
+      <label>Повторите новый пароль<input name="confirm_password" type="password" minlength="12" required autocomplete="new-password"></label>
+      <p id="password-error" class="form-error" role="alert"></p><button class="button primary full" type="submit">Сменить пароль</button><button id="password-back" class="button ghost full" type="button">Выйти</button>
+    </form>
+  </div>
+</section>
+<div id="workspace" class="workspace" hidden>
+  <aside class="sidebar"><a class="brand" href="/admin/"><span class="brand-mark">a</span>apex<span class="brand-ai">ai</span></a><span class="side-label">РАБОЧЕЕ ПРОСТРАНСТВО</span>
+    <nav aria-label="Основное меню"><button id="nav-catalog" class="nav-item active"><span>▦</span> Каталог подрядчиков</button><button id="nav-audit" class="nav-item"><span>◷</span> История изменений</button></nav>
+    <div class="side-bottom"><div class="side-context"><span class="status-dot"></span> Общий каталог с API<p>Изменения сразу влияют<br>на результаты подбора.</p></div><div class="admin-person"><span class="avatar">A</span><div><strong id="username">admin</strong><small>Администратор</small></div></div><button id="change-password" class="text-button">Сменить пароль</button><button id="logout" class="text-button">Выйти из аккаунта ↗</button></div>
+  </aside>
+  <main class="main"><header class="topbar"><span>Панель администратора <span class="crumb">/ <span id="crumb-title">Каталог</span></span></span><a href="/" target="_blank" rel="noopener">Открыть сайт ↗</a></header>
+    <section id="catalog-view" class="page">
+      <div class="page-heading"><div><span class="eyebrow muted">УПРАВЛЕНИЕ ДАННЫМИ</span><h1>Каталог подрядчиков<span class="title-dot">.</span></h1><p class="muted">Люди и площадки для событий, которые запоминаются.</p></div><button id="add-vendor" class="button primary"><span class="plus">+</span> Добавить подрядчика</button></div>
+      <div class="stats"><article><span>Всего профилей</span><strong id="stat-total">—</strong><small>в рабочем каталоге</small></article><article><span>Города</span><strong id="stat-cities">—</strong><small>география мероприятий</small></article><article><span>Категории</span><strong id="stat-categories">—</strong><small>направления услуг</small></article><article><span>Синтетические</span><strong id="stat-synthetic">—</strong><small>помечены в исходных данных</small></article></div>
+      <section class="catalog-card"><div class="card-top"><div><h2>Все подрядчики <span id="visible-count" class="count-badge">0</span></h2><p id="calendar-hint" class="muted">Загружаем каталог…</p></div><div class="actions"><a class="button secondary" href="/admin/api/export">↓ Экспорт CSV</a><button id="open-import" class="button secondary">↑ Загрузить CSV</button></div></div>
+        <div class="filters"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Имя, категория или ID…" aria-label="Поиск подрядчиков"></label><select id="city-filter" aria-label="Фильтр по городу"><option value="">Все города</option></select><select id="category-filter" aria-label="Фильтр по категории"><option value="">Все категории</option></select><button id="refresh" class="icon-button" title="Обновить каталог" aria-label="Обновить каталог">↻</button></div>
+        <p id="catalog-error" class="inline-error" role="alert" hidden></p>
+        <div class="table-scroll"><table><thead><tr><th>ПОДРЯДЧИК</th><th>КАТЕГОРИЯ</th><th>ГОРОД</th><th>ЦЕНА ОТ</th><th>ДАННЫЕ</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody id="vendor-rows"></tbody></table></div>
+        <div id="empty-state" class="empty-state" hidden><span>⌕</span><h3>Ничего не найдено</h3><p>Попробуйте другой запрос или сбросьте фильтры.</p><button id="reset-filters" class="button secondary">Сбросить фильтры</button></div>
+        <footer class="table-footer"><span id="table-summary">Загрузка…</span><span>Сортировка по имени · Цена за мероприятие</span></footer>
+      </section>
+      <p class="page-note">Цены «от» не являются итоговой сметой. Синтетические и восстановленные данные сохраняют свои метки.</p>
+    </section>
+    <section id="audit-view" class="page" hidden><div class="page-heading"><div><span class="eyebrow muted">КОНТРОЛЬ ИЗМЕНЕНИЙ</span><h1>История действий<span class="title-dot">.</span></h1><p class="muted">Последние 50 изменений каталога и пароля.</p></div><button id="refresh-audit" class="button secondary">Обновить</button></div><div id="audit-list" class="audit-list"></div></section>
+  </main>
+</div>
+<dialog id="vendor-dialog" class="dialog wide"><form id="vendor-form"><div class="dialog-heading"><div><span class="eyebrow muted">КАРТОЧКА ПОДРЯДЧИКА</span><h2 id="vendor-dialog-title">Новый подрядчик</h2></div><button class="icon-button" type="button" data-close aria-label="Закрыть">×</button></div>
+  <div class="dialog-body"><div class="form-grid"><label>ID<input name="id" required pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,79}" placeholder="Например, HK-90014" maxlength="80"><small>Уникальный ID; после создания не меняется.</small></label><label>Имя / название<input name="anon_name" required maxlength="200" placeholder="Название профиля"></label><label>Город<input name="city" required list="cities-list" placeholder="Алматы"><datalist id="cities-list"></datalist></label><label>Цена от, ₸<input name="price_from_kzt" type="number" min="1" step="1" required placeholder="250000"></label><label class="span-two">Категории<input name="categories" required list="categories-list" placeholder="Фотограф | Видеограф"><datalist id="categories-list"></datalist><small>Несколько категорий разделяйте символом |.</small></label><label>Максимум часов<input name="max_hours" type="number" min="0.1" step="any" placeholder="Не применимо"><small>Оставьте пустым, если ограничение неприменимо.</small></label><div class="flags"><label><input name="synthetic" type="checkbox"> Синтетический профиль</label><label><input name="price_imputed" type="checkbox"> Цена восстановлена</label><label><input name="city_imputed" type="checkbox"> Город восстановлен</label></div></div>
+    <fieldset><legend>Форматы мероприятий</legend><div id="format-checkboxes" class="check-grid"></div></fieldset><fieldset><legend>Языки</legend><div id="language-checkboxes" class="check-grid"></div></fieldset>
+    <label>Занятые даты<textarea name="busy_dates" rows="2" placeholder="2026-11-14 | 2026-12-19"></textarea><small id="busy-hint">Даты YYYY-MM-DD, разделённые |, запятой или новой строкой.</small></label><label>Описание<textarea name="description" rows="4" required maxlength="20000" placeholder="Специализация, стиль работы и важные условия"></textarea></label>
+    <p class="info-note">При изменении описания прежние подтверждённые факты будут удалены. Подбор продолжит работать с объяснениями по структурированным полям.</p><p id="vendor-error" class="form-error" role="alert"></p></div>
+  <div class="dialog-footer"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary" type="submit">Сохранить профиль</button></div></form></dialog>
+<dialog id="import-dialog" class="dialog"><div class="dialog-heading"><div><span class="eyebrow muted">МАССОВОЕ ДОБАВЛЕНИЕ</span><h2>Загрузка CSV</h2></div><button class="icon-button" type="button" data-close aria-label="Закрыть">×</button></div><div class="dialog-body"><p class="muted">Новые ID будут добавлены к текущему каталогу. Существующие записи изменяются только с вашего разрешения.</p><label class="upload-zone"><span class="upload-icon">↑</span><strong>Выберите CSV-файл</strong><span>UTF-8 · до 5 МБ · до 5000 строк</span><input id="csv-file" type="file" accept=".csv,text/csv"></label><div class="import-tools"><a href="/admin/api/template">↓ Скачать шаблон</a><button id="preview-import" class="button secondary">Проверить файл</button></div><div id="import-preview" hidden><div class="import-stats"><div><strong id="import-new">0</strong><span>новых</span></div><div><strong id="import-existing">0</strong><span>уже в каталоге</span></div></div><p id="import-sample" class="muted"></p><label class="checkbox-label"><input id="update-existing" type="checkbox"> Обновить записи с существующими ID</label><p class="info-note">Весь файл проверяется до сохранения. Если хотя бы одна строка некорректна, каталог не изменится.</p></div><p id="import-error" class="form-error" role="alert"></p></div><div class="dialog-footer"><button class="button secondary" data-close>Отмена</button><button id="confirm-import" class="button primary" disabled>Загрузить в каталог</button></div></dialog>
+<dialog id="delete-dialog" class="dialog compact"><div class="dialog-heading"><h2>Удалить профиль?</h2><button class="icon-button" data-close aria-label="Закрыть">×</button></div><div class="dialog-body"><p id="delete-name"></p><p class="muted">Подрядчик исчезнет из рекомендаций. Его подтверждённые факты также будут удалены.</p><p id="delete-error" class="form-error" role="alert"></p></div><div class="dialog-footer"><button class="button secondary" data-close>Отмена</button><button id="confirm-delete" class="button danger">Удалить профиль</button></div></dialog>
+</body></html>
