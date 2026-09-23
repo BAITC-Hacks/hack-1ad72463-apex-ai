@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { SearchRequest, SearchResponse } from "../../api/contracts";
+import type { SearchAlternative, SearchRequest, SearchResponse } from "../../api/contracts";
 import {
   CatalogUnavailableError,
   HttpApiError,
@@ -29,14 +29,41 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [technicalError, setTechnicalError] = useState<TechnicalErrorKind | null>(null);
   const [validationNotice, setValidationNotice] = useState<string | null>(null);
+  const [alternativesLoading, setAlternativesLoading] = useState(false);
+  const [alternatives, setAlternatives] = useState<SearchAlternative[]>([]);
+  const [appliedRequest, setAppliedRequest] = useState<SearchRequest | null>(null);
   const lastRequest = useRef<SearchRequest | null>(null);
   const activeController = useRef<AbortController | null>(null);
+  const alternativesController = useRef<AbortController | null>(null);
   const requestSequence = useRef(0);
+  const alternativesSequence = useRef(0);
 
-  useEffect(() => () => activeController.current?.abort(), []);
+  useEffect(() => () => {
+    activeController.current?.abort();
+    alternativesController.current?.abort();
+  }, []);
+
+  const loadAlternatives = async (request: SearchRequest) => {
+    const controller = new AbortController();
+    alternativesController.current = controller;
+    const sequence = ++alternativesSequence.current;
+    setAlternativesLoading(true);
+
+    try {
+      const result = await gateway.getAlternatives(request, { signal: controller.signal });
+      if (sequence === alternativesSequence.current) setAlternatives(result.alternatives);
+    } catch {
+      if (sequence === alternativesSequence.current) setAlternatives([]);
+    } finally {
+      if (sequence === alternativesSequence.current) setAlternativesLoading(false);
+    }
+  };
 
   const recommend = async (request: SearchRequest) => {
     activeController.current?.abort();
+    alternativesController.current?.abort();
+    alternativesController.current = null;
+    alternativesSequence.current += 1;
     const controller = new AbortController();
     activeController.current = controller;
     const sequence = ++requestSequence.current;
@@ -46,10 +73,15 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
     setFieldErrors({});
     setTechnicalError(null);
     setValidationNotice(null);
+    setAlternativesLoading(false);
+    setAlternatives([]);
 
     try {
       const nextResponse = await gateway.recommend(request, { signal: controller.signal });
-      if (sequence === requestSequence.current) setResponse(nextResponse);
+      if (sequence === requestSequence.current) {
+        setResponse(nextResponse);
+        if (nextResponse.status === "NO_MATCH") void loadAlternatives(request);
+      }
     } catch (error) {
       if (controller.signal.aborted || isAbortError(error) || sequence !== requestSequence.current) return;
       if (error instanceof ValidationApiError) {
@@ -81,6 +113,16 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
     if (lastRequest.current) void recommend(lastRequest.current);
   };
 
+  const applyAlternative = (alternative: SearchAlternative) => {
+    const current = lastRequest.current;
+    if (!current) return;
+    const nextRequest: SearchRequest = alternative.type === "BUDGET"
+      ? { ...current, budget_kzt: alternative.suggested_budget_kzt }
+      : { ...current, date: alternative.suggested_date };
+    setAppliedRequest(nextRequest);
+    void recommend(nextRequest);
+  };
+
   return (
     <main id="main">
       <section className="intro">
@@ -92,6 +134,7 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
       <div className="workspace">
         <RecommendationForm
           loading={loading}
+          appliedRequest={appliedRequest}
           serverErrors={fieldErrors}
           onFieldChange={(field) => setFieldErrors((current) => ({ ...current, [field]: undefined }))}
           onSubmit={(request) => void recommend(request)}
@@ -104,7 +147,14 @@ export function RecommendationPage({ gateway }: RecommendationPageProps) {
               <h2>Некоторые параметры не приняты</h2>
               <p>{validationNotice}</p>
             </div>
-          ) : <ResultsPanel response={response} />}
+          ) : (
+            <ResultsPanel
+              response={response}
+              alternativesLoading={alternativesLoading}
+              alternatives={alternatives}
+              onApplyAlternative={applyAlternative}
+            />
+          )}
         </section>
       </div>
       <p className="disclaimer">Результат основан на данных каталога. Стартовая цена не является итоговой сметой, а доступность требует подтверждения у подрядчика.</p>

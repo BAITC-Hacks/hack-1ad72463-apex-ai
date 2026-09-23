@@ -207,6 +207,20 @@ main { padding-top: 38px; }
 .empty-icon.danger { color: var(--danger); background: var(--danger-soft); }
 .empty-state .diagnostics { width: min(520px, 100%); margin-top: 24px; text-align: left; }
 
+.alternative-suggestions { width: min(620px, 100%); margin-top: 20px; text-align: left; }
+.alternatives-heading h3 { margin: 0 0 5px; color: var(--ink-green); font-family: Georgia, serif; font-size: 1.28rem; font-weight: 600; }
+.alternatives-heading p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.45; }
+.alternatives-loading { display: flex; align-items: center; gap: 9px; margin: 14px 0 0; color: var(--muted); font-size: 0.82rem; }
+.alternatives-loading .loading-dot { width: 15px; height: 15px; }
+.alternatives-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.alternative-card { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.alternative-type { margin: 0 0 7px; color: var(--muted); font-size: 0.73rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.alternative-value { margin: 0; color: var(--ink-green); font-family: Georgia, serif; font-size: 1.55rem; font-weight: 600; }
+.alternative-result { margin: 8px 0 0; color: #4f5955; font-size: 0.79rem; line-height: 1.4; }
+.alternative-distance { margin: 5px 0 0; color: var(--muted); font-size: 0.72rem; }
+.alternative-button { min-height: 38px; margin-top: 14px; padding: 0 13px; color: white; background: var(--ink-green); border: 0; border-radius: var(--radius-sm); font-size: 0.76rem; font-weight: 760; }
+.alternative-button:hover { background: #235445; }
+
 .loading-state { display: grid; gap: 20px; }
 .loading-copy { margin: -10px 0 0; color: var(--muted); }
 .loading-dot { width: 18px; height: 18px; flex: 0 0 auto; border: 3px solid #edc8bb; border-top-color: var(--accent); border-radius: 50%; animation: spin 800ms linear infinite; }
@@ -254,4 +268,5 @@ main { padding-top: 38px; }
   .contractor-heading { flex-direction: column; }
   .results-intro h2 { font-size: 1.75rem; }
   .diagnostics-totals { grid-template-columns: 1fr; }
+  .alternatives-grid { grid-template-columns: 1fr; }
 }

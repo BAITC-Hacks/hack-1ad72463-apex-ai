@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import type { DateOnly, SearchRequest } from "../../api/contracts";
 import { Field } from "../../shared/ui/Field";
@@ -60,15 +60,34 @@ function toRequest(values: FormValues): SearchRequest {
 
 interface RecommendationFormProps {
   loading: boolean;
+  appliedRequest?: SearchRequest | null;
   serverErrors: FieldErrors;
   onFieldChange: (field: FormField) => void;
   onSubmit: (request: SearchRequest) => void;
 }
 
-export function RecommendationForm({ loading, serverErrors, onFieldChange, onSubmit }: RecommendationFormProps) {
+function fromRequest(request: SearchRequest): FormValues {
+  return {
+    city: request.city,
+    category: request.category,
+    event_format: request.event_format,
+    date: request.date,
+    budget_kzt: String(request.budget_kzt),
+    language: request.language ?? "",
+    duration_hours: request.duration_hours == null ? "" : String(request.duration_hours),
+  };
+}
+
+export function RecommendationForm({ loading, appliedRequest, serverErrors, onFieldChange, onSubmit }: RecommendationFormProps) {
   const [values, setValues] = useState<FormValues>(initialFormValues);
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
   const errors = { ...serverErrors, ...clientErrors };
+
+  useEffect(() => {
+    if (!appliedRequest) return;
+    setValues(fromRequest(appliedRequest));
+    setClientErrors({});
+  }, [appliedRequest]);
 
   const update = (field: FormField, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));

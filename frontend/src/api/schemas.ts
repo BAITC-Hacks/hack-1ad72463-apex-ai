@@ -1,7 +1,33 @@
 import { z } from "zod";
 
-const dateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const dateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year!, month! - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month! - 1 && date.getUTCDate() === day;
+}, "Invalid calendar date");
 const nonNegativeInteger = z.number().int().nonnegative();
+
+const budgetAlternativeSchema = z.object({
+  type: z.literal("BUDGET"),
+  current_budget_kzt: z.number().int().positive().safe(),
+  suggested_budget_kzt: z.number().int().positive().safe(),
+  eligible_count: z.number().int().positive().safe(),
+}).strict().refine(
+  (alternative) => alternative.suggested_budget_kzt > alternative.current_budget_kzt,
+  { message: "suggested_budget_kzt must be greater than current_budget_kzt", path: ["suggested_budget_kzt"] },
+);
+
+const dateAlternativeSchema = z.object({
+  type: z.literal("DATE"),
+  current_date: dateOnlySchema,
+  suggested_date: dateOnlySchema,
+  distance_days: z.number().int().positive().safe(),
+  eligible_count: z.number().int().positive().safe(),
+}).strict();
+
+export const alternativesResponseSchema = z.object({
+  alternatives: z.array(z.discriminatedUnion("type", [budgetAlternativeSchema, dateAlternativeSchema])).max(2),
+}).strict();
 
 const recommendationSchema = z.object({
   id: z.string().min(1),
