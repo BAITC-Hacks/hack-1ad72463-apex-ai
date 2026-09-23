@@ -1,147 +1,151 @@
-# Apex Match — подбор event-подрядчиков
+# Apex Match — Event Vendor Matching
 
-**Apex Match** — веб-приложение команды **Apex-AI** для HackAlem AI. Сервис помогает организатору мероприятия найти до трёх подходящих подрядчиков по городу, категории, дате, формату, бюджету, языку и длительности работы. Для каждого результата показывает стартовую цену и объясняет, почему профиль подходит.
+**English** | [Русский](README.ru.md)
 
-**Рабочий сайт:** [testrr.shop](https://testrr.shop/) · **Справочники API:** [каталог](https://testrr.shop/api/catalog/meta) · **Состояние API:** [health](https://testrr.shop/api/health)
+**Apex Match** is a web application built by **Apex-AI** for HackAlem AI. It helps event organizers find up to three suitable vendors based on city, category, date, event format, budget, language, and working duration. Each result includes a starting price and an explanation of why the profile matches.
 
-Состояние описано на **23 сентября 2026 года**. Публичный frontend и Go backend развёрнуты и связаны через реальный API. Основной каталог содержит **66 профилей, 17 категорий** и календарные данные за **23 сентября — 31 декабря 2026 года**.
+**Live website:** [testrr.shop](https://testrr.shop/) · **API reference data:** [catalog](https://testrr.shop/api/catalog/meta) · **API status:** [health](https://testrr.shop/api/health)
 
-## Содержание
+This overview reflects the project as of **September 23, 2026**. The public frontend and Go backend are deployed and connected through the live API. The baseline catalog contains **66 profiles across 17 categories**, with calendar data covering **September 23–December 31, 2026**.
 
-- [Задача и возможности](#задача-и-возможности)
-- [Как работает подбор](#как-работает-подбор)
-- [Данные и объяснения](#данные-и-объяснения)
-- [Стек и архитектура](#стек-и-архитектура)
-- [Структура репозитория](#структура-репозитория)
-- [Быстрый локальный запуск](#быстрый-локальный-запуск)
-- [Конфигурация](#конфигурация)
+## Contents
+
+- [Purpose and features](#purpose-and-features)
+- [How matching works](#how-matching-works)
+- [Data and explanations](#data-and-explanations)
+- [Technology and architecture](#technology-and-architecture)
+- [Repository structure](#repository-structure)
+- [Local quick start](#local-quick-start)
+- [Configuration](#configuration)
 - [HTTP API](#http-api)
-- [Демонстрационные сценарии](#демонстрационные-сценарии)
-- [Тестирование](#тестирование)
-- [Развёртывание и эксплуатация](#развёртывание-и-эксплуатация)
-- [Ограничения и развитие](#ограничения-и-развитие)
-- [Документация](#документация)
-- [Авторы](#авторы)
+- [Demo scenarios](#demo-scenarios)
+- [Testing](#testing)
+- [Deployment and operations](#deployment-and-operations)
+- [Limitations and future work](#limitations-and-future-work)
+- [Documentation](#documentation)
+- [Authors](#authors)
 
-## Задача и возможности
+## Purpose and features
 
-Организатору нужно сопоставить условия мероприятия с разрозненными профилями подрядчиков. Apex Match делает этот подбор воспроизводимым и показывает причины результата.
+Event organizers need to compare their requirements against information spread across vendor profiles. Apex Match makes that selection reproducible and explains the outcome.
 
-Пользователь заполняет форму, запускает поиск и получает:
+After completing the form and running a search, users receive:
 
-- До трёх карточек из каталога со стартовой ценой, ограничением по часам и объяснением выбора.
-- Число подходящих профилей до ограничения выдачи тремя карточками.
-- Причины исключения остальных кандидатов: формат, бюджет, язык, длительность или занятость.
-- Разные сообщения для отсутствующей категории в городе и отсутствия подходящих вариантов при заданных условиях.
-- Метки синтетических профилей и восстановленных при подготовке датасета значений.
-- Ошибки валидации рядом с полями формы и отдельные состояния технической ошибки, загрузки и повторного запроса.
+- Up to three catalog cards with starting prices, working-hour limits, and explanations.
+- The total number of eligible profiles before the three-card limit is applied.
+- Reasons for excluding other candidates: event format, budget, language, duration, or availability.
+- Distinct messages when a city has no vendors in the selected category and when existing vendors do not meet the requirements.
+- Labels identifying synthetic profiles and values filled in during dataset preparation.
+- Field-level validation messages, plus separate loading, technical-error, and retry states.
 
-В интерфейсе есть пять быстрых сценариев. Они заполняют форму, а поиск запускается кнопкой **«Найти подрядчиков»**. Один запрос относится к **одной категории и одному подрядчику**; бюджет не распределяется между всеми услугами мероприятия.
+The interface includes five quick scenarios. They populate the form; the user then starts the search with **«Найти подрядчиков» (Find vendors)**. Each request covers **one category and one vendor**; the budget is not distributed across all services for an event.
 
-## Как работает подбор
+## How matching works
 
-1. Backend проверяет JSON, обязательные поля, типы и допустимое окно дат.
-2. Выбирает профили с точным совпадением нормализованных города и категории. Нормализация учитывает Unicode, регистр и лишние пробелы.
-3. Проверяет условия в порядке: **формат → бюджет → язык → длительность → занятость**.
-4. Сортирует подходящие профили по `price_from_kzt ASC`, затем по `id ASC` и возвращает первые три.
-5. Формирует объяснение из условий запроса, структурированных данных и проверенных выдержек описания.
+1. The backend validates JSON, required fields, types, and the supported date window.
+2. It selects profiles whose normalized city and category match exactly. Normalization handles Unicode, case, and extra whitespace.
+3. It checks constraints in this order: **event format → budget → language → duration → availability**.
+4. It sorts eligible profiles by `price_from_kzt ASC`, then `id ASC`, and returns the first three.
+5. It builds explanations from the request conditions, structured data, and verified excerpts from profile descriptions.
 
-Если профиль нарушает несколько условий, публичная воронка считает его на первом проваленном шаге. Условия автоматически не ослабляются; неподходящие профили не добавляются для заполнения трёх карточек. Для одинаковой версии каталога и нормализованного запроса состав и порядок результатов повторяемы.
+When a profile fails several checks, the public diagnostics count it at the first failed step. Conditions are never relaxed automatically, and ineligible profiles are not added to fill three cards. The same catalog version and normalized request produce the same results in the same order.
 
-Цена, равная бюджету, и длительность, равная лимиту, допустимы. Если язык или длительность не заданы, соответствующая проверка пропускается. `max_hours: null` означает неприменимость ограничения по часам.
+A price equal to the budget and a duration equal to the working-hour limit are allowed. If language or duration is omitted, the corresponding check is skipped. `max_hours: null` means the working-hour limit does not apply.
 
-## Данные и объяснения
+## Data and explanations
 
-Исходный набор находится в [backend/data/catalog.csv](backend/data/catalog.csv). Это анонимизированный каталог из 66 профилей, включая 13 синтетических профилей, уже присутствовавших в исходных данных.
+The source dataset is stored in [backend/data/catalog.csv](backend/data/catalog.csv). It contains 66 anonymized profiles, including 13 synthetic profiles already present in the supplied data.
 
-| Характеристика | Значение |
+| Attribute | Value |
 |---|---|
-| География | Алматы, Астана, «Зарубежье» — группа исходного каталога |
-| Категории | 17: ведущие, фотографы, видеографы, площадки, флористы и другие |
-| Форматы | Свадьба, той, корпоратив, конференция, юбилей, день рождения |
-| Языки | Русский, казахский, английский |
-| Валюта | Казахстанский тенге, `KZT` |
-| Календарное окно | `2026-09-23`…`2026-12-31` включительно |
-| Факты для объяснений | 66 особенностей профилей и 2 условия для уточнения |
+| Geography | Almaty, Astana, and «Зарубежье» (Abroad), a source-dataset grouping |
+| Categories | 17, including hosts, photographers, videographers, venues, florists, and others |
+| Event formats | Wedding, toi, corporate event, conference, anniversary, birthday |
+| Languages | Russian, Kazakh, English |
+| Currency | Kazakhstani tenge, `KZT` |
+| Calendar window | `2026-09-23` through `2026-12-31`, inclusive |
+| Explanation facts | 66 profile features and 2 conditions requiring confirmation |
 
-[backend/data/catalog.meta.json](backend/data/catalog.meta.json) задаёт календарное окно. [backend/data/facts.json](backend/data/facts.json) связывает утверждения с ID профиля, цитатой и хешем исходного описания. При изменении описания устаревший факт не проходит проверку импорта.
+[backend/data/catalog.meta.json](backend/data/catalog.meta.json) defines the calendar window. [backend/data/facts.json](backend/data/facts.json) links statements to a profile ID, a quotation, and a hash of the source description. If a description changes, outdated facts fail import validation.
 
-**Онлайн-вызовов LLM в текущей реализации нет.** Объяснения собираются по шаблонам из подготовленных фактов. API-ключи моделей, обучение, эмбеддинги и векторное хранилище для запуска не нужны. Подтверждение соответствия факта описанию не является независимой проверкой рекламного заявления подрядчика.
+**The current implementation does not make online LLM calls.** Explanations are assembled from templates and prepared facts. Model API keys, training, embeddings, and a vector database are not required. Verifying that a fact matches a description is not an independent verification of a vendor's advertising claim.
 
-Цена «от» относится к мероприятию, не умножается на часы и не является итоговой сметой. Отсутствие даты в списке занятых означает только «не отмечено занятым в датасете» и не подтверждает реальную доступность или бронирование.
+The starting price applies to the event, is not multiplied by hours, and is not a final quote. A date missing from the busy-date list means only that it is not marked busy in the dataset; it does not confirm real availability or a booking.
 
-## Стек и архитектура
+## Technology and architecture
 
-| Компонент | Технологии |
+| Component | Technologies |
 |---|---|
 | Frontend | React 19, TypeScript, Vite, CSS |
-| Проверка ответа API | Zod |
-| Тесты frontend | Vitest, Testing Library, jsdom |
+| API response validation | Zod |
+| Frontend tests | Vitest, Testing Library, jsdom |
 | Backend | Go 1.25+, `net/http`, `pgx/v5` |
-| Хранилище | PostgreSQL 16+; локальный Compose использует PostgreSQL 16 |
-| Тесты backend | Go testing, race detector, интеграция с PostgreSQL |
-| Локальная инфраструктура | Docker Compose |
+| Storage | PostgreSQL 16+; local Compose uses PostgreSQL 16 |
+| Backend tests | Go testing, race detector, PostgreSQL integration |
+| Local infrastructure | Docker Compose |
 | Production | Ubuntu, Nginx, HTTPS, systemd, PostgreSQL |
 
 ```text
-Браузер → Nginx / HTTPS → React frontend
-                    └─ /api/* → Go API → PostgreSQL
+Browser → Nginx / HTTPS → React frontend
+                     └─ /api/* → Go API → PostgreSQL
 
-CSV + метаданные + факты → catalog CLI → проверка → миграции / импорт → PostgreSQL
+CSV + metadata + facts → catalog CLI → validation → migrations / import → PostgreSQL
 ```
 
-Frontend отправляет запрос и отображает ответ backend; самостоятельно не фильтрует и не пересортировывает подрядчиков. API читает согласованный снимок каталога из PostgreSQL и проверяет его целостность. Импорт сначала проверяет весь набор данных, затем заменяет каталог одной транзакцией. Ошибка импорта сохраняет предыдущий снимок.
+The frontend sends requests and displays backend responses; it does not independently filter or reorder vendors. The API reads a consistent catalog snapshot from PostgreSQL and verifies its integrity. Import validates the entire dataset before replacing the catalog in a single transaction. A failed import preserves the previous snapshot.
 
-Каталог небольшой, поэтому отдельные Redis, очередь и постоянный кеш не используются. Публичный интерфейс использует встроенные справочники формы; endpoint метаданных уже доступен, но его динамическая загрузка во frontend пока не подключена.
+The catalog is small, so there is no separate Redis instance, queue, or persistent cache. The public interface uses built-in form options. The metadata endpoint is available, but the frontend does not yet load those options dynamically.
 
-## Структура репозитория
+## Repository structure
 
 ```text
 .
-├── README.md                       # описание проекта и быстрый старт
-├── TECH_SPEC.md                     # исходные требования и критерии приёмки
-├── ARCHITECTURE.md                  # архитектура и контракт решения
+├── README.md                        # project overview in English
+├── README.ru.md                     # project overview in Russian
+├── TECH_SPEC.md                      # original requirements and acceptance criteria
+├── ARCHITECTURE.md                   # architecture and solution contract
+├── admin_panel/                    # authenticated catalog management, CSV preview, audit log
 ├── backend/
-│   ├── cmd/server/                 # HTTP-сервер
-│   ├── cmd/catalog/                # проверка, миграции и импорт каталога
-│   ├── internal/                   # модели, подбор, HTTP, PostgreSQL, конфигурация
-│   ├── data/                       # CSV, метаданные календаря, факты
-│   ├── examples/                   # примеры запроса и ответа
-│   ├── scripts/smoke.sh            # HTTP smoke-проверки
-│   ├── compose.yaml                # локальные БД, инициализация и API
+│   ├── cmd/server/                  # HTTP server
+│   ├── cmd/catalog/                 # catalog validation, migrations, and import
+│   ├── internal/                    # models, matching, HTTP, PostgreSQL, configuration
+│   ├── data/                        # CSV, calendar metadata, facts
+│   ├── examples/                    # request and response examples
+│   ├── scripts/smoke.sh             # HTTP smoke checks
+│   ├── compose.yaml                 # local database, initialization, and API
 │   ├── Dockerfile
 │   ├── Makefile
-│   ├── ENDPOINT.MD                 # полный HTTP-контракт
-│   ├── TESTING.md                  # тестирование backend
+│   ├── ENDPOINT.MD                  # full HTTP contract
+│   ├── TESTING.md                   # backend testing
 │   └── README.md
 └── frontend/
-    ├── src/api/                    # HTTP/mock адаптеры, контракты и схемы
-    ├── src/app/                    # конфигурация приложения
-    ├── src/features/recommendations/ # форма, карточки, состояния и тесты
-    ├── src/shared/                 # общие элементы и форматирование
-    ├── src/styles/                 # стили
+    ├── src/api/                     # HTTP/mock adapters, contracts, and schemas
+    ├── src/app/                     # application configuration
+    ├── src/features/recommendations/ # form, cards, states, and tests
+    ├── src/shared/                  # shared components and formatting
+    ├── src/styles/                  # styles
     ├── .env.example
-    ├── .env.production             # реальный API на том же origin
+    ├── .env.production              # live API on the same origin
     ├── package.json
     └── README.md
 ```
 
-Структура отражает опубликованный MVP. Отдельная `admin_panel` находится в разработке и на момент подготовки этого README ещё не включена в `main`.
+The repository also includes a separate [admin panel](admin_panel/README.md) at [testrr.shop/admin/](https://testrr.shop/admin/). It supports authenticated catalog search, manual creation and editing, deletion, CSV preview and import, export, and an audit log. It shares PostgreSQL with the public API, so saved changes are reflected in subsequent searches. Setup and API details are documented in the admin panel directory.
 
-## Быстрый локальный запуск
+## Local quick start
 
-Нужны Git, Docker с Compose v2 и Node.js 24+ с npm. Go 1.25+ нужен для запуска и тестирования backend вне Docker. Для приватного репозитория необходим доступ GitHub.
+You need Git, Docker with Compose v2, and Node.js 24+ with npm. Go 1.25+ is required to run or test the backend outside Docker. Access to the private GitHub repository is required.
 
-### 1. Получить проект
+### 1. Get the project
 
 ```sh
 git clone https://github.com/BAITC-Hacks/hack-1ad72463-apex-ai.git
 cd hack-1ad72463-apex-ai
 ```
 
-### 2. Запустить backend и PostgreSQL
+### 2. Start the backend and PostgreSQL
 
-Из корня репозитория:
+From the repository root:
 
 ```sh
 cd backend
@@ -150,11 +154,11 @@ curl --fail http://localhost:8080/readyz
 sh scripts/smoke.sh
 ```
 
-Compose запускает БД, выполняет миграции и импорт через одноразовый сервис `init`, затем поднимает API. API доступен на `http://localhost:8080`, PostgreSQL — на `127.0.0.1:54329`. Данные сохраняются в `backend/.tmp/postgres-compose`.
+Compose starts the database, applies migrations and imports the catalog through a one-off `init` service, then starts the API. The API is available at `http://localhost:8080`, and PostgreSQL at `127.0.0.1:54329`. Database files are persisted in `backend/.tmp/postgres-compose`.
 
-### 3. Запустить frontend
+### 3. Start the frontend
 
-В другом терминале, из корня репозитория:
+In another terminal, from the repository root:
 
 ```sh
 cd frontend
@@ -166,15 +170,15 @@ ENV
 npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 ```
 
-Откройте [localhost:5173](http://localhost:5173). В конфигурации backend разрешён origin `http://localhost:5173`; используйте именно этот адрес браузера. В этом режиме интерфейс обращается к локальному API.
+Open [localhost:5173](http://localhost:5173). The backend configuration allows the `http://localhost:5173` origin, so use that exact browser address. In this mode, the interface calls the local API.
 
-### Автономное демо без backend
+### Standalone demo without a backend
 
-В `frontend/.env.local` задайте `VITE_API_MODE=mock` и перезапустите Vite. Интерфейс покажет метку **DEMO / MOCK API**. Mock использует заранее подготовленные сценарии, не выполняет реальный поиск и не заменяет проверку интеграции с PostgreSQL.
+Set `VITE_API_MODE=mock` in `frontend/.env.local` and restart Vite. The interface displays a **DEMO / MOCK API** label. Mock mode uses prepared scenarios, does not perform a real catalog search, and does not replace integration testing with PostgreSQL.
 
-### Запуск backend через Go
+### Run the backend with Go
 
-Из папки `backend`, при установленном Go и доступном Docker:
+From `backend`, with Go installed and Docker available:
 
 ```sh
 docker compose up -d db
@@ -187,50 +191,50 @@ make bootstrap
 make run
 ```
 
-Этот вариант заменяет запуск API через Compose. Если Compose API уже занимает порт 8080, сначала выполните `docker compose stop api`. Приложение само не читает `.env`, поэтому переменные необходимо экспортировать, как в примере.
+This replaces running the API through Compose. If the Compose API already occupies port 8080, run `docker compose stop api` first. The application does not load `.env` automatically, so export the variables as shown above.
 
-Остановка Compose: `docker compose down` из `backend`. Данные БД при этом сохраняются.
+To stop Compose, run `docker compose down` from `backend`. Database files are retained.
 
-## Конфигурация
+## Configuration
 
 ### Backend
 
-| Переменная | Назначение |
+| Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | PostgreSQL DSN; обязателен для сервера, миграций и импорта |
-| `HTTP_ADDR` | Адрес HTTP-сервера, по умолчанию `:8080` |
-| `CORS_ORIGINS` | Разрешённые origin через запятую; локально `http://localhost:3000,http://localhost:5173` |
-| `CATALOG_CSV` | Файл каталога для CLI, по умолчанию `data/catalog.csv` |
-| `CATALOG_META` | Метаданные календаря, по умолчанию `data/catalog.meta.json` |
-| `CATALOG_FACTS` | Файл фактов; значение `-` отключает дополнительные факты при импорте |
-| `TEST_DATABASE_URL` | Отдельное подключение для интеграционных тестов |
+| `DATABASE_URL` | PostgreSQL DSN; required for the server, migrations, and import |
+| `HTTP_ADDR` | HTTP server address; defaults to `:8080` |
+| `CORS_ORIGINS` | Comma-separated allowed origins; locally `http://localhost:3000,http://localhost:5173` |
+| `CATALOG_CSV` | Catalog file for the CLI; defaults to `data/catalog.csv` |
+| `CATALOG_META` | Calendar metadata; defaults to `data/catalog.meta.json` |
+| `CATALOG_FACTS` | Facts file; `-` disables additional facts during import |
+| `TEST_DATABASE_URL` | Separate connection for integration tests |
 
-Пример: [backend/.env.example](backend/.env.example). Пароль из локального Compose предназначен только для разработки.
+Example: [backend/.env.example](backend/.env.example). The password in the local Compose configuration is for development only.
 
 ### Frontend
 
-| Переменная | Назначение |
+| Variable | Purpose |
 |---|---|
-| `VITE_API_MODE` | `http` — реальный API; `mock` — автономные фикстуры |
-| `VITE_API_BASE_URL` | Корневой адрес backend или адрес с суффиксом `/api` |
+| `VITE_API_MODE` | `http` for the live API; `mock` for standalone fixtures |
+| `VITE_API_BASE_URL` | Backend root URL or a URL ending in `/api` |
 
-Production-конфигурация: `VITE_API_MODE=http`, `VITE_API_BASE_URL=/api`. Запрос идёт на `POST /api/recommendations` того же домена.
+Production configuration: `VITE_API_MODE=http`, `VITE_API_BASE_URL=/api`. Requests go to `POST /api/recommendations` on the same domain.
 
-Переменные Vite встраиваются при сборке. При смене адреса API пересоберите frontend. Перед production-сборкой исключите локальные переопределения из `.env.local` либо явно задайте production-значения в окружении. Переменные `VITE_*` видны в браузере и не должны содержать секреты.
+Vite variables are embedded at build time. Rebuild the frontend after changing the API address. Before a production build, remove local overrides from `.env.local` or explicitly set the production values in the environment. `VITE_*` variables are visible in the browser and must not contain secrets.
 
 ## HTTP API
 
-| Метод | Путь backend | Назначение |
+| Method | Backend path | Purpose |
 |---|---|---|
-| `POST` | `/api/recommendations` | Подбор до трёх подрядчиков |
-| `GET` | `/api/catalog/meta` | Справочники, версии и окно календаря |
-| `GET` | `/healthz` | Работоспособность HTTP-процесса |
-| `GET` | `/readyz` | Доступность БД и целостность каталога |
-| `GET` | `/metrics` | HTTP-счётчики и задержки в формате Prometheus |
+| `POST` | `/api/recommendations` | Find up to three suitable vendors |
+| `GET` | `/api/catalog/meta` | Reference data, versions, and calendar window |
+| `GET` | `/healthz` | HTTP process liveness |
+| `GET` | `/readyz` | Database availability and catalog integrity |
+| `GET` | `/metrics` | HTTP counters and latency metrics in Prometheus format |
 
-На production Nginx дополнительно предоставляет `GET /api` как сокращение `/api/catalog/meta` и `GET /api/health` как проверку `/readyz`. Служебные `/healthz`, `/readyz` и `/metrics` напрямую наружу не проксируются.
+In production, Nginx also exposes `GET /api` as an alias for `/api/catalog/meta` and `GET /api/health` as a readiness check mapped to `/readyz`. The internal `/healthz`, `/readyz`, and `/metrics` paths are not directly proxied to the public Internet.
 
-Пример запроса к развёрнутому сервису:
+Example request to the deployed service. Keep the Russian catalog values shown below: translating the documentation does not change the API's accepted values.
 
 ```sh
 curl --fail-with-body https://testrr.shop/api/recommendations \
@@ -246,35 +250,35 @@ curl --fail-with-body https://testrr.shop/api/recommendations \
   }'
 ```
 
-Обязательные поля: `city`, `date`, `event_format`, `category`, `budget_kzt`. Язык и длительность можно опустить или передать `null`. Ответ содержит `status`, `message`, `results`, `diagnostics` и `metadata`.
+Required fields: `city`, `date`, `event_format`, `category`, and `budget_kzt`. Language and duration may be omitted or set to `null`. The response contains `status`, `message`, `results`, `diagnostics`, and `metadata`.
 
-| Исход | HTTP | Смысл |
+| Outcome | HTTP | Meaning |
 |---|---|---|
-| `MATCHES_FOUND` | 200 | Есть подходящие профили |
-| `NO_CATALOG` | 200 | Нет профилей в выбранном городе и категории |
-| `NO_MATCH` | 200 | Профили есть, но условия исключили всех |
-| `VALIDATION_ERROR` | 422 | Ошибки полей запроса |
-| `CATALOG_UNAVAILABLE` | 503 | БД или каталог не готовы |
+| `MATCHES_FOUND` | 200 | Eligible profiles were found |
+| `NO_CATALOG` | 200 | No profiles exist in the selected city and category |
+| `NO_MATCH` | 200 | Profiles exist, but all were excluded by the conditions |
+| `VALIDATION_ERROR` | 422 | Request field validation failed |
+| `CATALOG_UNAVAILABLE` | 503 | The database or catalog is not ready |
 
-Бизнес-исходы и ошибки имеют разные структуры. Полный контракт, остальные коды ошибок и примеры: [backend/ENDPOINT.MD](backend/ENDPOINT.MD).
+Business outcomes and errors use different response structures. See [backend/ENDPOINT.MD](backend/ENDPOINT.MD) for the full contract, additional error codes, and examples.
 
-## Демонстрационные сценарии
+## Demo scenarios
 
-Базовый запрос: Алматы, ведущий, корпоратив, `2026-11-14`, бюджет `1 000 000 ₸`, русский язык, 6 часов.
+Baseline request: Almaty, host, corporate event, `2026-11-14`, budget `1,000,000 ₸`, Russian, 6 hours.
 
-| Сценарий | Изменение базового запроса | Ожидаемый результат исходного каталога |
+| Scenario | Change from the baseline | Expected result with the original catalog |
 |---|---|---|
-| Популярный запрос | Без изменений | 4 подходящих, показаны `HK-44923`, `HK-29829`, `HK-27222` |
-| Занятая дата | Дата `2026-12-19` | 1 карточка: `HK-35215` |
-| Редкая категория | Флорист, свадьба, бюджет `300 000 ₸` | 1 карточка: `HK-90001`, синтетический профиль |
-| Нет совпадений | Бюджет `100 000 ₸` | `NO_MATCH` |
-| Нет категории | Астана, декоратор | `NO_CATALOG` |
+| Popular request | None | 4 eligible profiles; returns `HK-44923`, `HK-29829`, `HK-27222` |
+| Busy date | Date `2026-12-19` | 1 card: `HK-35215` |
+| Rare category | Florist, wedding, budget `300,000 ₸` | 1 card: `HK-90001`, a synthetic profile |
+| No matches | Budget `100,000 ₸` | `NO_MATCH` |
+| No category | Astana, decorator | `NO_CATALOG` |
 
-Эти ожидания относятся к исходной версии данных. После изменения каталога состав результатов может измениться.
+These expectations apply to the original dataset version. Results may change when the catalog is updated.
 
-## Тестирование
+## Testing
 
-Frontend, из `frontend`:
+Frontend, from `frontend`:
 
 ```sh
 npm ci
@@ -282,9 +286,9 @@ npm run test:run
 npm run build
 ```
 
-Тесты проверяют форму, карточки, разные пустые состояния, метку синтетического профиля, стартовую цену, отсутствие ложного нуля для `max_hours: null` и обработку ошибок 422/503. Сборка также проверяет TypeScript.
+Tests cover the form, result cards, distinct empty states, synthetic-profile labels, starting prices, correct handling of `max_hours: null`, and 422/503 errors. The build also checks TypeScript.
 
-Backend, из `backend`:
+Backend, from `backend`:
 
 ```sh
 make test
@@ -293,40 +297,40 @@ make build
 make benchmark
 ```
 
-Для интеграционных тестов нужен реальный PostgreSQL и заданный `TEST_DATABASE_URL`:
+Integration tests require a real PostgreSQL instance and `TEST_DATABASE_URL`:
 
 ```sh
 export TEST_DATABASE_URL='postgres://hackalem:hackalem_local@127.0.0.1:54329/hackalem?sslmode=disable'
 make test-integration
 ```
 
-Интеграционные тесты создают собственную уникальную схему, проверяют миграции, импорт, откат, конкурентное чтение, повреждение каталога и отказ БД, затем удаляют тестовую схему. Без `TEST_DATABASE_URL` проверки PostgreSQL в общем запуске пропускаются.
+Integration tests create a unique schema, verify migrations, import, rollback, concurrent reads, catalog corruption, and database failures, then remove that test schema. PostgreSQL checks in the general test run are skipped when `TEST_DATABASE_URL` is not set.
 
-При развёртывании 23 сентября 2026 года прошли 8 тестов frontend, production-сборка, HTTP-проверки пяти бизнес-сценариев и проверка поиска в браузере через реальный API. Это результат конкретного запуска, а не статус непрерывного CI. Подробнее о backend: [TESTING.md](backend/TESTING.md).
+During deployment on September 23, 2026, all 8 frontend tests, the production build, HTTP checks for five business scenarios, and browser checks against the live API passed. These are results from a specific run, not a continuous CI status. See [TESTING.md](backend/TESTING.md) for backend details.
 
-## Развёртывание и эксплуатация
+## Deployment and operations
 
-Рабочий адрес — **https://testrr.shop**. Nginx обслуживает статическую сборку frontend и проксирует `/api/*` на Go-сервис по `127.0.0.1:18080`. PostgreSQL и порт приложения не открыты в Интернет. HTTPS использует сертификат Let’s Encrypt с настроенным автопродлением; HTTP и `www` перенаправляются на основной HTTPS-адрес.
+The live website is [testrr.shop](https://testrr.shop/). Nginx serves the static frontend build and proxies `/api/*` to the Go service at `127.0.0.1:18080`. PostgreSQL and the application port are not exposed to the Internet. HTTPS uses a Let's Encrypt certificate with automatic renewal; HTTP and `www` redirect to the canonical HTTPS address.
 
-| Компонент | Текущее размещение |
+| Component | Current location |
 |---|---|
-| Frontend | `/opt/hackalem/frontend/current`, ссылка на каталог релиза |
+| Frontend | `/opt/hackalem/frontend/current`, a symlink to a release directory |
 | Backend | `/opt/hackalem/backend/current` |
-| Сервис backend | `hackalem-backend.service` |
-| Окружение backend | `/etc/hackalem/backend.env` |
-| Конфигурация сайта | `/etc/nginx/sites-available/testrr.shop` |
-| PostgreSQL production | 18.6; база `hackalem` |
+| Backend service | `hackalem-backend.service` |
+| Backend environment | `/etc/hackalem/backend.env` |
+| Website configuration | `/etc/nginx/sites-available/testrr.shop` |
+| Production PostgreSQL | 18.6; database `hackalem` |
 
-Production-сборка frontend из папки `frontend`:
+Build the production frontend from `frontend`:
 
 ```sh
 npm ci
 VITE_API_MODE=http VITE_API_BASE_URL=/api npm run build
 ```
 
-Для обновления загрузите содержимое `frontend/dist` в новый каталог релиза и атомарно переключите ссылку `current`. Nginx должен сохранять API-маршруты, SPA fallback на `index.html`, правила HTTPS и ACME. Для `index.html` настроен `no-cache`, для хешированных файлов `/assets/` — длительное кеширование. Предыдущие релизы и резервные копии конфигурации сохраняйте для отката.
+To update the frontend, upload the contents of `frontend/dist` into a new release directory and switch the `current` symlink atomically. Preserve the Nginx API routes, SPA fallback to `index.html`, HTTPS settings, and ACME configuration. `index.html` uses `no-cache`; hashed files under `/assets/` use long-lived caching. Retain previous releases and configuration backups for rollback.
 
-Обновление каталога через локальный Compose, из `backend`:
+Update the catalog through local Compose, from `backend`:
 
 ```sh
 docker compose build
@@ -334,37 +338,41 @@ docker compose run --rm init
 docker compose up -d api
 ```
 
-CLI `catalog check|migrate|import|bootstrap` предназначен для проверки и загрузки файлов. Импорт **заменяет весь каталог**, а не добавляет одну запись. Перед production-обновлением БД сохраните резервную копию. Прямое изменение таблиц может нарушить контроль целостности; используйте предусмотренный импорт.
+The `catalog check|migrate|import|bootstrap` CLI validates and loads files. CLI import **replaces the entire catalog** rather than adding a single record. The admin panel offers a separate incremental CSV workflow with a preview: existing IDs are updated only when explicitly selected, and records absent from the uploaded file are retained. Back up the database before a production update. Direct table edits can break integrity checks; use the supported import workflow.
 
-Проверка production API:
+Check the production API:
 
 ```sh
 curl --fail https://testrr.shop/api/health
 curl --fail https://testrr.shop/api/catalog/meta
 ```
 
-На сервере доступны `systemctl status hackalem-backend nginx` и `journalctl -u hackalem-backend`. Backend пишет JSON-логи с ID запроса, статусом, длительностью, версиями каталога и результатом подбора. Метрики процесса сбрасываются при рестарте.
+On the server, use `systemctl status hackalem-backend nginx` and `journalctl -u hackalem-backend`. The backend writes JSON logs with request IDs, status codes, duration, catalog versions, and matching outcomes. Process metrics reset on restart.
 
-## Ограничения и развитие
+## Limitations and future work
 
-Текущий MVP не выполняет бронирования, оплату, отправку сообщений подрядчикам или проверку их реальной доступности. Публичный API подбора не требует авторизации. В нём нет загрузки CSV и CRUD через HTTP; отдельная админ-панель разрабатывается следующим этапом.
+The current MVP does not handle bookings, payments, messages to vendors, or verification of their actual availability. The public matching API does not require authentication. Catalog CRUD and CSV uploads are handled by the separate authenticated admin panel, not by the public matching API.
 
-Поддерживаются только даты исходного календарного окна. Нет свободного текстового запроса, семантического ранжирования, отзывов, рейтинга качества, автоматического расширения бюджета, подбора комплекта услуг и синхронизации календарей. Сортировка по цене — прозрачное правило MVP, а не оценка профессионального качества.
+Only dates within the source calendar window are supported. There is no free-text search, semantic ranking, reviews, quality scoring, automatic budget expansion, service-bundle selection, or calendar synchronization. Price sorting is a transparent MVP rule, not a measure of professional quality.
 
-Дальнейшее развитие: завершение защищённой админ-панели, динамические справочники во frontend, обновляемый календарь, типизированные дополнительные условия и оценка релевантности на размеченных сценариях. Семантическое ранжирование можно вводить отдельно среди профилей, уже прошедших обязательные ограничения.
+Future work includes extending the admin panel, loading form options dynamically, updating the calendar, adding typed constraints, and evaluating relevance against labeled scenarios. Semantic ranking can be introduced separately among profiles that already satisfy all mandatory constraints.
 
-## Документация
+## Documentation
 
-- [Техническое задание](TECH_SPEC.md) — исходные требования, границы и критерии приёмки. Отметка «реализация ещё не выполнена» отражает момент подготовки спецификации.
-- [Архитектура](ARCHITECTURE.md) — компоненты, модель данных, поток подбора и проектные решения.
-- [Backend README](backend/README.md) — запуск, хранение, импорт и эксплуатационные детали.
-- [HTTP API](backend/ENDPOINT.MD) — все эндпоинты, поля, статусы и ошибки.
-- [Тестирование backend](backend/TESTING.md) — проверяемые сценарии и результаты.
-- [Frontend README](frontend/README.md) — интерфейс, HTTP/mock режимы и интеграция.
-- [Пример запроса](backend/examples/recommendation-request.json) и [полный ответ](backend/examples/recommendation-response.json).
+The detailed documents linked below are currently in Russian.
 
-## Авторы
+- [Technical specification](TECH_SPEC.md) — original requirements, scope, and acceptance criteria. Its “implementation not yet completed” note reflects when the specification was written.
+- [Architecture](ARCHITECTURE.md) — components, data model, matching flow, and design decisions.
+- [Backend README](backend/README.md) — setup, storage, import, and operational details.
+- [HTTP API](backend/ENDPOINT.MD) — all endpoints, fields, statuses, and errors.
+- [Backend testing](backend/TESTING.md) — covered scenarios and results.
+- [Frontend README](frontend/README.md) — interface, HTTP/mock modes, and integration.
+- [Admin panel](admin_panel/README.md) — authentication, catalog management, CSV import, and setup.
+- [Admin API](admin_panel/ENDPOINT.MD) — protected routes and data formats.
+- [Example request](backend/examples/recommendation-request.json) and [full response](backend/examples/recommendation-response.json).
 
-- **Серикбаев Санжар** — Fullstack developer
-- **Құмарова Алина** — Аналитик - тестировщик
-- **Бабанов Виктор** — Frontend developer
+## Authors
+
+- **Sanzhar Serikbayev (Серикбаев Санжар)** — Fullstack developer
+- **Alina Kumarova (Құмарова Алина)** — Analyst / QA tester
+- **Viktor Babanov (Бабанов Виктор)** — Frontend developer

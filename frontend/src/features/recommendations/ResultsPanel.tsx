@@ -1,10 +1,13 @@
-import type { SearchResponse } from "../../api/contracts";
+import type { SearchAlternative, SearchResponse } from "../../api/contracts";
 import { ContractorCard } from "./ContractorCard";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { EmptyState } from "./EmptyState";
 
 interface ResultsPanelProps {
   response: SearchResponse | null;
+  alternativesLoading: boolean;
+  alternatives: SearchAlternative[];
+  onApplyAlternative: (alternative: SearchAlternative) => void;
 }
 
 function resultSummary(response: SearchResponse): string {
@@ -14,7 +17,7 @@ function resultSummary(response: SearchResponse): string {
   return `Подходят ${eligible_count} подрядчика`;
 }
 
-export function ResultsPanel({ response }: ResultsPanelProps) {
+export function ResultsPanel({ response, alternativesLoading, alternatives, onApplyAlternative }: ResultsPanelProps) {
   if (!response) {
     return (
       <div className="idle-state">
@@ -26,7 +29,16 @@ export function ResultsPanel({ response }: ResultsPanelProps) {
     );
   }
 
-  if (response.status !== "MATCHES_FOUND") return <EmptyState response={response} />;
+  if (response.status !== "MATCHES_FOUND") {
+    return (
+      <EmptyState
+        response={response}
+        alternativesLoading={alternativesLoading}
+        alternatives={alternatives}
+        onApplyAlternative={onApplyAlternative}
+      />
+    );
+  }
 
   return (
     <div className="results-success">
