@@ -2,6 +2,8 @@
 
 **English** | [Русский](README.ru.md)
 
+Deployment: [English](DEPLOY.MD) · [Русский](DEPLOY.ru.MD)
+
 **Apex Match** is a web application built by **Apex-AI** for HackAlem AI. It helps event organizers find up to three suitable vendors based on city, category, date, event format, budget, language, and working duration. Each result includes a starting price and an explanation of why the profile matches.
 
 **Live website:** [testrr.shop](https://testrr.shop/) · **API reference data:** [catalog](https://testrr.shop/api/catalog/meta) · **API status:** [health](https://testrr.shop/api/health)
