@@ -16,6 +16,7 @@ This overview reflects the project as of **September 23, 2026**. The public fron
 - [Technology and architecture](#technology-and-architecture)
 - [Repository structure](#repository-structure)
 - [Local quick start](#local-quick-start)
+- [Admin panel](#admin-panel)
 - [Configuration](#configuration)
 - [HTTP API](#http-api)
 - [Demo scenarios](#demo-scenarios)
@@ -80,6 +81,7 @@ The starting price applies to the event, is not multiplied by hours, and is not 
 | API response validation | Zod |
 | Frontend tests | Vitest, Testing Library, jsdom |
 | Backend | Go 1.25+, `net/http`, `pgx/v5` |
+| Admin panel | Separate Go module, embedded HTML/CSS/JavaScript, bcrypt, PostgreSQL sessions |
 | Storage | PostgreSQL 16+; local Compose uses PostgreSQL 16 |
 | Backend tests | Go testing, race detector, PostgreSQL integration |
 | Local infrastructure | Docker Compose |
@@ -87,7 +89,8 @@ The starting price applies to the event, is not multiplied by hours, and is not 
 
 ```text
 Browser → Nginx / HTTPS → React frontend
-                     └─ /api/* → Go API → PostgreSQL
+                     ├─ /api/* → Go matching API → PostgreSQL
+                     └─ /admin/* → Go admin service → same PostgreSQL
 
 CSV + metadata + facts → catalog CLI → validation → migrations / import → PostgreSQL
 ```
@@ -195,6 +198,41 @@ This replaces running the API through Compose. If the Compose API already occupi
 
 To stop Compose, run `docker compose down` from `backend`. Database files are retained.
 
+## Admin panel
+
+Open [testrr.shop/admin/](https://testrr.shop/admin/) to manage the shared catalog. Access requires an administrator account. The panel supports manual creation, full-record editing, deletion, CSV preview and import, CSV export, a blank template, and the latest 50 audit events. Vendor IDs are immutable; deleting the last profile is blocked.
+
+### Local setup and first login
+
+First initialize the backend catalog using the quick-start instructions above. In another terminal, from the repository root:
+
+```sh
+cd admin_panel
+cp .env.example .env
+set -a
+. ./.env
+set +a
+make build
+bin/admin init
+bin/admin serve
+```
+
+The supplied configuration uses the same local database as the backend. Open [127.0.0.1:18081/admin/](http://127.0.0.1:18081/admin/); the exact origin must match `ADMIN_ORIGIN`. The admin service is not included in the backend Compose file. Keep the `backend` and `admin_panel` directories next to each other because the Go module uses `replace ../backend`.
+
+`init` creates admin tables and the `admin` account without replacing the catalog. It prints a random temporary password once. There is no shared default password. Repeating `init` preserves an existing account. On first login, change the temporary password, then sign in again. Password changes revoke all sessions; sessions otherwise expire after eight hours. Account creation and role management are not exposed in the UI.
+
+### Catalog changes and CSV
+
+Download the template or export from the panel to obtain the 13-column CSV format. Use UTF-8, comma-separated columns, and `|` inside list fields, such as `русский|английский`. The upload limit is 5 MiB per multipart request and 5,000 records per file. Manual and CSV input use the same catalog validation rules.
+
+Preview the file before applying it. By default, only new IDs may be imported; any existing ID rejects the entire import. Selecting **update existing records** allows those profiles to be replaced in full. Profiles absent from the file are retained. Preview is a validation step, not a reservation: a concurrent catalog change requires a new preview.
+
+Changes use a catalog revision (`ETag` / `If-Match`) to prevent overwriting another administrator's work. A successful transaction saves the catalog and audit event together. New matching requests see committed changes without restarting the public API. Editing a description removes its outdated explanation facts; new facts are not generated automatically. Changes live in PostgreSQL and do not rewrite repository CSV files.
+
+The public frontend still uses built-in city/category options. Adding a new city or category in the panel updates API metadata but does not automatically add an option to that form. The three-result limit and price/ID sorting remain unchanged.
+
+See the [admin guide](admin_panel/README.md), [admin API](admin_panel/ENDPOINT.MD), [test guide](admin_panel/TESTING.md), and [deployment guide](admin_panel/deploy/README.md).
+
 ## Configuration
 
 ### Backend
@@ -210,6 +248,17 @@ To stop Compose, run `docker compose down` from `backend`. Database files are re
 | `TEST_DATABASE_URL` | Separate connection for integration tests |
 
 Example: [backend/.env.example](backend/.env.example). The password in the local Compose configuration is for development only.
+
+### Admin service
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Same database as the matching API |
+| `ADMIN_ADDR` | Listen address, default `127.0.0.1:18081` |
+| `ADMIN_ORIGIN` | Exact browser origin without a path; default `https://testrr.shop` |
+| `ADMIN_INSECURE_HTTP` | `true` only for local loopback HTTP; production uses secure cookies |
+| `ADMIN_TRUST_PROXY` | Trust Nginx `X-Real-IP` only when the service and peer use loopback |
+| `ADMIN_INITIAL_PASSWORD` | Optional initial password for `init`; omit to generate one |
 
 ### Frontend
 
@@ -308,6 +357,8 @@ Integration tests create a unique schema, verify migrations, import, rollback, c
 
 During deployment on September 23, 2026, all 8 frontend tests, the production build, HTTP checks for five business scenarios, and browser checks against the live API passed. These are results from a specific run, not a continuous CI status. See [TESTING.md](backend/TESTING.md) for backend details.
 
+Admin tests run separately from the backend module. From `admin_panel`, with `TEST_DATABASE_URL` pointing to a test database, run `make test check`. Without it, database integration tests are skipped. See [admin_panel/TESTING.md](admin_panel/TESTING.md) for coverage and a manual verification procedure.
+
 ## Deployment and operations
 
 The live website is [testrr.shop](https://testrr.shop/). Nginx serves the static frontend build and proxies `/api/*` to the Go service at `127.0.0.1:18080`. PostgreSQL and the application port are not exposed to the Internet. HTTPS uses a Let's Encrypt certificate with automatic renewal; HTTP and `www` redirect to the canonical HTTPS address.
@@ -318,6 +369,8 @@ The live website is [testrr.shop](https://testrr.shop/). Nginx serves the static
 | Backend | `/opt/hackalem/backend/current` |
 | Backend service | `hackalem-backend.service` |
 | Backend environment | `/etc/hackalem/backend.env` |
+| Admin release / service | `/opt/hackalem/admin_panel/current` / `hackalem-admin.service` |
+| Admin environment / port | `/etc/hackalem/admin.env` / `127.0.0.1:18081` |
 | Website configuration | `/etc/nginx/sites-available/testrr.shop` |
 | Production PostgreSQL | 18.6; database `hackalem` |
 
@@ -328,7 +381,7 @@ npm ci
 VITE_API_MODE=http VITE_API_BASE_URL=/api npm run build
 ```
 
-To update the frontend, upload the contents of `frontend/dist` into a new release directory and switch the `current` symlink atomically. Preserve the Nginx API routes, SPA fallback to `index.html`, HTTPS settings, and ACME configuration. `index.html` uses `no-cache`; hashed files under `/assets/` use long-lived caching. Retain previous releases and configuration backups for rollback.
+To update the frontend, upload the contents of `frontend/dist` into a new release directory and switch the `current` symlink atomically. Preserve the Nginx `/admin/` proxy, API routes, SPA fallback to `index.html`, HTTPS settings, and ACME configuration. `index.html` uses `no-cache`; hashed files under `/assets/` use long-lived caching. Retain previous releases and configuration backups for rollback.
 
 Update the catalog through local Compose, from `backend`:
 
@@ -347,7 +400,7 @@ curl --fail https://testrr.shop/api/health
 curl --fail https://testrr.shop/api/catalog/meta
 ```
 
-On the server, use `systemctl status hackalem-backend nginx` and `journalctl -u hackalem-backend`. The backend writes JSON logs with request IDs, status codes, duration, catalog versions, and matching outcomes. Process metrics reset on restart.
+On the server, use `systemctl status hackalem-backend hackalem-admin nginx` and `journalctl -u hackalem-backend`. The backend writes JSON logs with request IDs, status codes, duration, catalog versions, and matching outcomes. Process metrics reset on restart.
 
 ## Limitations and future work
 
@@ -361,7 +414,7 @@ Future work includes extending the admin panel, loading form options dynamically
 
 The detailed documents linked below are currently in Russian.
 
-- [Technical specification](TECH_SPEC.md) — original requirements, scope, and acceptance criteria. Its “implementation not yet completed” note reflects when the specification was written.
+- [Technical specification](TECH_SPEC.md) — matching and administration requirements, scope, and acceptance criteria.
 - [Architecture](ARCHITECTURE.md) — components, data model, matching flow, and design decisions.
 - [Backend README](backend/README.md) — setup, storage, import, and operational details.
 - [HTTP API](backend/ENDPOINT.MD) — all endpoints, fields, statuses, and errors.
