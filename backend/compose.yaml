@@ -1,0 +1,40 @@
+name: hackalem-backend
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hackalem
+      POSTGRES_USER: hackalem
+      POSTGRES_PASSWORD: hackalem_local
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - ./.tmp/postgres-compose:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hackalem -d hackalem"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  init:
+    build: .
+    image: hackalem-backend:local
+    command: ["/app/catalog", "bootstrap"]
+    environment:
+      DATABASE_URL: postgres://hackalem:hackalem_local@db:5432/hackalem?sslmode=disable
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    build: .
+    image: hackalem-backend:local
+    environment:
+      DATABASE_URL: postgres://hackalem:hackalem_local@db:5432/hackalem?sslmode=disable
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped

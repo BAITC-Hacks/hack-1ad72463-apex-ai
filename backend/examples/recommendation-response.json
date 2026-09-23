@@ -1,0 +1,69 @@
+{
+  "status": "MATCHES_FOUND",
+  "message": "Подходят 4 подрядчика; показаны 3 по стартовой цене, затем ID.",
+  "results": [
+    {
+      "id": "HK-44923",
+      "anon_name": "Мицури Канроджи",
+      "city": "Алматы",
+      "category": "Ведущий",
+      "price_from_kzt": 650000,
+      "max_hours": 8,
+      "synthetic": false,
+      "price_imputed": false,
+      "city_imputed": false,
+      "explanation": "Профиль поддерживает формат «корпоратив» в городе Алматы; стартовая цена 650000 ₸ укладывается в бюджет 1000000 ₸; язык «русский» указан в профиле; запрошено 6 ч при лимите 8 ч; 2026-11-14 не отмечено занятым в календаре датасета. В описании отмечено: Разработанный ТОЛЬКО для Вас сценарий."
+    },
+    {
+      "id": "HK-29829",
+      "anon_name": "Аня Форджер",
+      "city": "Алматы",
+      "category": "Ведущий",
+      "price_from_kzt": 700000,
+      "max_hours": 6,
+      "synthetic": false,
+      "price_imputed": false,
+      "city_imputed": false,
+      "explanation": "Профиль поддерживает формат «корпоратив» в городе Алматы; стартовая цена 700000 ₸ укладывается в бюджет 1000000 ₸; язык «русский» указан в профиле; запрошено 6 ч при лимите 6 ч; 2026-11-14 не отмечено занятым в календаре датасета. В описании отмечено: Только развлечения и танцы."
+    },
+    {
+      "id": "HK-27222",
+      "anon_name": "Сон Гоку",
+      "city": "Алматы",
+      "category": "Ведущий",
+      "price_from_kzt": 1000000,
+      "max_hours": 10,
+      "synthetic": false,
+      "price_imputed": false,
+      "city_imputed": false,
+      "explanation": "Профиль поддерживает формат «корпоратив» в городе Алматы; стартовая цена 1000000 ₸ равна бюджету; язык «русский» указан в профиле; запрошено 6 ч при лимите 10 ч; 2026-11-14 не отмечено занятым в календаре датасета. В описании отмечено: европейская подача, тонкий юмор, уважение к традициям."
+    }
+  ],
+  "diagnostics": {
+    "catalog_count": 10,
+    "eligible_count": 4,
+    "returned_count": 3,
+    "excluded_counts": {
+      "BUDGET_TOO_LOW": 2,
+      "BUSY_ON_DATE": 3,
+      "DURATION_EXCEEDED": 0,
+      "EVENT_FORMAT_UNSUPPORTED": 1,
+      "LANGUAGE_UNSUPPORTED": 0
+    },
+    "omitted_optional_checks": [],
+    "applied_order": [
+      "price_from_kzt:asc",
+      "id:asc"
+    ]
+  },
+  "metadata": {
+    "snapshot_version": "sha256:6a724b6b7dfb5973343e68ba18dadb60fc807d87e3d78f03ee86fb26cb089f7d",
+    "loader_version": "loader-v1",
+    "policy_version": "eligibility-price-v1",
+    "facts_version": "sha256:d7742a409783e0c1e6af51469e7eecdc20c7c62dcf40e8ea0080de6b2c30ddcb",
+    "calendar_window": {
+      "from": "2026-09-23",
+      "to": "2026-12-31"
+    }
+  }
+}

@@ -1,0 +1,614 @@
+[
+  {
+    "vendor_id": "HK-10990",
+    "fact_id": "HK-10990-feature-v1",
+    "text": "слаженную работу в команде, где все ориентированы на качественный результат",
+    "quote": "слаженную работу в команде, где все ориентированы на качественный результат",
+    "description_hash": "sha256:6c5cfbf18c60d6f559c4099ff70a9c92f7f0c39c7c314119a2263c6aeabd0d91",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-11484",
+    "fact_id": "HK-11484-feature-v1",
+    "text": "от идеи и эскиза до монтажа и финальной реализации",
+    "quote": "от идеи и эскиза до монтажа и финальной реализации",
+    "description_hash": "sha256:b31319cdd5ed15a0950a6a198c22e40dc12673a7f09931090831e25957801bed",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-16628",
+    "fact_id": "HK-16628-feature-v1",
+    "text": "Является свадебным и репортажным фотографом",
+    "quote": "Является свадебным и репортажным фотографом",
+    "description_hash": "sha256:cffa6bb92b80196ea024d0cc75407a200eebe5775e377bd99d4f1fb07f450dc3",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-19103",
+    "fact_id": "HK-19103-feature-v1",
+    "text": "духовная, энергичная команда джигитов",
+    "quote": "духовная, энергичная команда джигитов",
+    "description_hash": "sha256:8a4ea9627aded352947cc29bd7ffc1726d1439073432231a55d9e7b1f4c4e176",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-20640",
+    "fact_id": "HK-20640-feature-v1",
+    "text": "внимание к деталям, живые эмоции и аккуратная, эстетичная подача",
+    "quote": "внимание к деталям, живые эмоции и аккуратная, эстетичная подача",
+    "description_hash": "sha256:d55470139eec108b545835737821524020fc8e8b027c43452bec45565b8e425f",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-23752",
+    "fact_id": "HK-23752-feature-v1",
+    "text": "ретро-хиты, треки из нулевых, современные композиции и казахскую музыку",
+    "quote": "ретро-хиты, треки из нулевых, современные композиции и казахскую музыку",
+    "description_hash": "sha256:c117da95f3b5e8f7d9a3ae52cca0a5e8510e1263503c48a229007bc24240b90b",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-25279",
+    "fact_id": "HK-25279-feature-v1",
+    "text": "звуком, энергией и атмосферой, которую создаём на сцене",
+    "quote": "звуком, энергией и атмосферой, которую создаём на сцене",
+    "description_hash": "sha256:bfdbd353263a740c1b95ef992fccc5b33abe1aa793694a2719c8fb43a355b1bf",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-26808",
+    "fact_id": "HK-26808-feature-v1",
+    "text": "Сценарист команды КВН Высшей лиги",
+    "quote": "Сценарист команды КВН Высшей лиги",
+    "description_hash": "sha256:b7376b9ca28a8dc0bcf326fd5339ec019e06d421255014242bd048bc5ba7c811",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-27222",
+    "fact_id": "HK-27222-feature-v1",
+    "text": "европейская подача, тонкий юмор, уважение к традициям",
+    "quote": "европейская подача, тонкий юмор, уважение к традициям",
+    "description_hash": "sha256:499d74a2c7274cd9393a6e64578e5b896274133a1cc3f26174d1b0a3fb9aa5f4",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-29829",
+    "fact_id": "HK-29829-feature-v1",
+    "text": "Только развлечения и танцы",
+    "quote": "Только развлечения и танцы",
+    "description_hash": "sha256:3467e971c3bbdc5d6286bbb843cc3ffccc110a7d25f79bfd1e7775b39b672409",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-30583",
+    "fact_id": "HK-30583-feature-v1",
+    "text": "Эстетика, атмосфера, детали",
+    "quote": "Эстетика, атмосфера, детали",
+    "description_hash": "sha256:32ac1e03e493ddf26f3b385fef61f3a92cce1f4429f279ea363d4a1144d55bf9",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-31819",
+    "fact_id": "HK-31819-feature-v1",
+    "text": "как на больших концертных площадках и open-air’ах, так и в маленьких уютных клубах",
+    "quote": "как на больших концертных площадках и open-air’ах, так и в маленьких уютных клубах",
+    "description_hash": "sha256:a49c955ef414e43ab58598863648f833ceeccc4c811ea796257f76c0259f1a48",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-35215",
+    "fact_id": "HK-35215-feature-v1",
+    "text": "тонкого юмора, харизмы и безупречных манер",
+    "quote": "тонкого юмора, харизмы и безупречных манер",
+    "description_hash": "sha256:a7e4582b5d29398e8d72d27b8387f64ad106c5115e7726a0acb05673cc55fff4",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-35846",
+    "fact_id": "HK-35846-feature-v1",
+    "text": "Световые и пиксельные шоу; Интерактивные фото/видеозоны",
+    "quote": "Световые и пиксельные шоу; Интерактивные фото/видеозоны",
+    "description_hash": "sha256:a8f9d885afe50e8d29e715a35d45d9a27d54f2ec3a78e3caf2cbd21d88c64f88",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-35913",
+    "fact_id": "HK-35913-feature-v1",
+    "text": "от камерных торжеств до крупных форумов и презентаций",
+    "quote": "от камерных торжеств до крупных форумов и презентаций",
+    "description_hash": "sha256:e92125906f9c7020bacd35f30dd607b595f4f6ccd83aab49fbd12be483982d73",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-36965",
+    "fact_id": "HK-36965-feature-v1",
+    "text": "Прославляем казахскую песню на весь мир",
+    "quote": "Прославляем казахскую песню на весь мир",
+    "description_hash": "sha256:73efc9f51245227e55d2c3b61de0b08df72f9b5fdc5a7b10cb14c156e9bd2ad2",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-37181",
+    "fact_id": "HK-37181-feature-v1",
+    "text": "ДИНАМИКА, ИМПРОВИЗАЦИЯ, ИНТЕРАКТИВЫ",
+    "quote": "ДИНАМИКА, ИМПРОВИЗАЦИЯ, ИНТЕРАКТИВЫ",
+    "description_hash": "sha256:296885ca0f8b08ffaa97ed421b390bf7a4990051a6ee835245da1af1fecf78ec",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-39301",
+    "fact_id": "HK-39301-feature-v1",
+    "text": "Авторский проект Ичиго и Рукии, впервые выступивший перед главой государства",
+    "quote": "Авторский проект Ичиго и Рукии, впервые выступивший перед главой государства",
+    "description_hash": "sha256:149bb1cee8d08aa53d46bd6f5a45b8c9265d6a7f93756eaebd82cdd69467cfd5",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-39372",
+    "fact_id": "HK-39372-feature-v1",
+    "text": "авторском цветочном оформлении и флористике",
+    "quote": "авторском цветочном оформлении и флористике",
+    "description_hash": "sha256:dccfb3f618ad89836ac5bee6ab5baff7e8fd5402bc7061a9725970dc26d94ffc",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-42352",
+    "fact_id": "HK-42352-feature-v1",
+    "text": "Опыт ведения свадеб 13 лет",
+    "quote": "Опыт ведения свадеб 13 лет",
+    "description_hash": "sha256:3b046187f918cf42153cc18a9c9ae3025e4f5ed57b6a566acbc29755e0bf6041",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-44733",
+    "fact_id": "HK-44733-feature-v1",
+    "text": "Стиль ведения интеллигентный, не напряжный, атмосферный",
+    "quote": "Стиль ведения интеллигентный, не напряжный, атмосферный",
+    "description_hash": "sha256:821c199710682251509a8638f43200ece6e1fd0c1dfc3958c6c7dc67984db013",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-44923",
+    "fact_id": "HK-44923-feature-v1",
+    "text": "Разработанный ТОЛЬКО для Вас сценарий",
+    "quote": "Разработанный ТОЛЬКО для Вас сценарий",
+    "description_hash": "sha256:0cc94aa6477b4dad7eec4b15423a011024c4870293c50f2719128d139e44d243",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-45928",
+    "fact_id": "HK-45928-feature-v1",
+    "text": "свадебной, семейной и рекламной съёмке",
+    "quote": "свадебной, семейной и рекламной съёмке",
+    "description_hash": "sha256:08e058b9d7ed68a5dfdd19b72bddaccc8390d219319b8ff9622b35a7dfe651f1",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-46450",
+    "fact_id": "HK-46450-feature-v1",
+    "text": "узнаваемое авторское звучание с контрабасом",
+    "quote": "узнаваемое авторское звучание с контрабасом",
+    "description_hash": "sha256:000c558d5aa8b0ca52b83203889813e71f1afbc5585beef3690ef6b3c8c0871d",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-50695",
+    "fact_id": "HK-50695-feature-v1",
+    "text": "ресторан итальянской и средиземноморской кухни",
+    "quote": "ресторан итальянской и средиземноморской кухни",
+    "description_hash": "sha256:060f30706ebcdcf60f9aea86f6b6ff84e82596fc938366e77f653cc4b8c1bc83",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-53108",
+    "fact_id": "HK-53108-feature-v1",
+    "text": "чувства, свет и тишина внутри кадра",
+    "quote": "чувства, свет и тишина внутри кадра",
+    "description_hash": "sha256:d24d455407b793d07b1a4144dcc350ee03a3cee6c89d7a279f6aa931b33a3d1e",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-57480",
+    "fact_id": "HK-57480-feature-v1",
+    "text": "хореографией и активным взаимодействием с публикой",
+    "quote": "хореографией и активным взаимодействием с публикой",
+    "description_hash": "sha256:f4ca7c01cef7b3445aa0f8bfd7c07b8653ce7aabbc940c2426d795c732a7a7b7",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-58236",
+    "fact_id": "HK-58236-feature-v1",
+    "text": "Интерьер вдохновлён традиционной юртой и украшен национальными мотивами",
+    "quote": "Интерьер вдохновлён традиционной юртой и украшен национальными мотивами",
+    "description_hash": "sha256:88ce08c46acee5265999ede86b978d57ca49a9d06aac692327ec241cbdd0d189",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-58385",
+    "fact_id": "HK-58385-feature-v1",
+    "text": "энергия сцены, интеллектуальный юмор и мощная импровизация",
+    "quote": "энергия сцены, интеллектуальный юмор и мощная импровизация",
+    "description_hash": "sha256:3e51b9530939311d23555b4889b5324d29b28684a4fd98d4baa1abac79beb8ec",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-60927",
+    "fact_id": "HK-60927-feature-v1",
+    "text": "производство леденцов без сахара с индивидуальным дизайном",
+    "quote": "производство леденцов без сахара с индивидуальным дизайном",
+    "description_hash": "sha256:6419527bac5578cb245f18f8b7d4744348204688e6a801f35701820659a77e4a",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-61323",
+    "fact_id": "HK-61323-feature-v1",
+    "text": "свадебный фотожурнализм, документально — свадебный фотожурнализм",
+    "quote": "свадебный фотожурнализм, документально — свадебный фотожурнализм",
+    "description_hash": "sha256:86c4a8777868bb96fb422bd2cd20de90ff4bba3cec7ede30eb6485314640a5e9",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-62242",
+    "fact_id": "HK-62242-feature-v1",
+    "text": "свадебный видеограф с авторским взглядом и международной практикой",
+    "quote": "свадебный видеограф с авторским взглядом и международной практикой",
+    "description_hash": "sha256:8896280c44bad2148f4dd40c305deaaea2ab6b6f8a8320cdb71869c33a18c7fb",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-64395",
+    "fact_id": "HK-64395-feature-v1",
+    "text": "панорамная локация в Алматы с захватывающим видом на город и горы",
+    "quote": "панорамная локация в Алматы с захватывающим видом на город и горы",
+    "description_hash": "sha256:bb70e527e4fb2e25445b37effe56f3b8a26972c15a1d222765944c708267f171",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-68220",
+    "fact_id": "HK-68220-feature-v1",
+    "text": "сочетание репортажной съемки(захват моментов) и постановочных кадров",
+    "quote": "сочетание репортажной съемки(захват моментов) и постановочных кадров",
+    "description_hash": "sha256:b458cb50a174428d4aa34d832f6cf50b8b9be115e1ccdbb1f453d66f499da067",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-69010",
+    "fact_id": "HK-69010-feature-v1",
+    "text": "панорамные виды на горы и спокойную премиальную атмосферу",
+    "quote": "панорамные виды на горы и спокойную премиальную атмосферу",
+    "description_hash": "sha256:90b80753dbb48f18d6ed87408f94845681f0dbc095d6b54b0adad3513857eca1",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-72785",
+    "fact_id": "HK-72785-feature-v1",
+    "text": "панорамными видами на горы и город, расположенный в башне Sakura Tower",
+    "quote": "панорамными видами на горы и город, расположенный в башне Sakura Tower",
+    "description_hash": "sha256:e4a7d2631a7544c1823cc91c36305a7275b90d7b16d6f774408426734576f16c",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-72938",
+    "fact_id": "HK-72938-feature-v1",
+    "text": "Большая база игр и конкурсов, свежий юмор на актуальные темы",
+    "quote": "Большая база игр и конкурсов, свежий юмор на актуальные темы",
+    "description_hash": "sha256:56cd56af1e4d450c9add34a1554a453641c3618b90565fb96a727a8e28b3038b",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-74147",
+    "fact_id": "HK-74147-feature-v1",
+    "text": "музыкальный дуэт премиум-класса",
+    "quote": "музыкальный дуэт премиум-класса",
+    "description_hash": "sha256:1ab706f3cede4a4fa956e9803d7ef2621873c22dfbd9ae84bb15df706d93ca4a",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-74914",
+    "fact_id": "HK-74914-feature-v1",
+    "text": "Я свадебный видеограф из Астаны",
+    "quote": "Я свадебный видеограф из Астаны",
+    "description_hash": "sha256:7dc202647f2e7138338fdec83ad918b33d9ac6365b312e9573fe5fadfeb1ed9b",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-75012",
+    "fact_id": "HK-75012-feature-v1",
+    "text": "технологические форумы, концерты и премиальные частные события",
+    "quote": "технологические форумы, концерты и премиальные частные события",
+    "description_hash": "sha256:72240b2284ca95e228e6a7231e920078436e0199d1ba47fb25ddc32a2a608cf3",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-76268",
+    "fact_id": "HK-76268-feature-v1",
+    "text": "Люблю живые кадры, настоящие улыбки и моменты, которые невозможно повторить",
+    "quote": "Люблю живые кадры, настоящие улыбки и моменты, которые невозможно повторить",
+    "description_hash": "sha256:e91ada224c05ea5e55027f254cdb048f40d943b699e44711a75a531f947695fc",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-76335",
+    "fact_id": "HK-76335-feature-v1",
+    "text": "живые эмоции, естественность и аккуратная эстетика",
+    "quote": "живые эмоции, естественность и аккуратная эстетика",
+    "description_hash": "sha256:54ad468b672bce1022e74dea219a9e0f645d24d3fbb569e7a5b314e6851ac1e9",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-77793",
+    "fact_id": "HK-77793-feature-v1",
+    "text": "Ведение на казахском и русском языках",
+    "quote": "Ведение на казахском и русском языках",
+    "description_hash": "sha256:6ea24a20c323cf57e2e47539c7504c3365fcc7d455fed2445d8494e3bb1df448",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-77838",
+    "fact_id": "HK-77838-feature-v1",
+    "text": "культурная импровизация, тонкий юмор и естественная энергия",
+    "quote": "культурная импровизация, тонкий юмор и естественная энергия",
+    "description_hash": "sha256:8a24fa6dbd4f02cb7cb84dc7b4b700592701e74f5de63df044682977c8ca1b6e",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-80581",
+    "fact_id": "HK-80581-feature-v1",
+    "text": "Обладаю приятным тембром голоса и владею вокалом",
+    "quote": "Обладаю приятным тембром голоса и владею вокалом",
+    "description_hash": "sha256:065a6943a68e7c922a9c34e25b27f95dce39fc747c333724242185cea0a495a9",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-83709",
+    "fact_id": "HK-83709-feature-v1",
+    "text": "4 вокалиста, струнный квартет, духовой брасс, перкуссионист, клавишник, барабанщик, гитарист и бас-гитарист",
+    "quote": "4 вокалиста, струнный квартет, духовой брасс, перкуссионист, клавишник, барабанщик, гитарист и бас-гитарист",
+    "description_hash": "sha256:4c1cdff66a177dc0bbfc11c58726be1a6d006b876dfdc9b63dc02bb21210f9d3",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-88430",
+    "fact_id": "HK-88430-feature-v1",
+    "text": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч",
+    "quote": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч",
+    "description_hash": "sha256:fdcb0efdebfbc8b295f2e055d8d5dffced16fd8e7a4998ff6f5cb6a6925aec5f",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90001",
+    "fact_id": "HK-90001-feature-v1",
+    "text": "собираем композиции под цветовую палитру мероприятия",
+    "quote": "собираем композиции под цветовую палитру мероприятия",
+    "description_hash": "sha256:a240d43a45a852f6ec08e89b1ea57cb6b188f85cfa4fb578cf5128053b40cad1",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90002",
+    "fact_id": "HK-90002-feature-v1",
+    "text": "welcome-зоны, президиумы, фотозоны",
+    "quote": "welcome-зоны, президиумы, фотозоны",
+    "description_hash": "sha256:80743351b78355f303361f82745a4d9837b0b75d0cbb5d50985937a55561c61b",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90003",
+    "fact_id": "HK-90003-feature-v1",
+    "text": "неоновые вывески, шар-гирлянды, тканевый декор потолка",
+    "quote": "неоновые вывески, шар-гирлянды, тканевый декор потолка",
+    "description_hash": "sha256:a09d70ff313ce3a6ab2bd0c1a28634301cf760ff975e1a7cae692750afd96652",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90004",
+    "fact_id": "HK-90004-feature-v1",
+    "text": "подиумы, арки, фотозоны на металлокаркасе",
+    "quote": "подиумы, арки, фотозоны на металлокаркасе",
+    "description_hash": "sha256:0281af1f1ed89fa7c7e15ad2ad0125714985432b068a350a7ba8a711cdd6bd35",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90005",
+    "fact_id": "HK-90005-feature-v1",
+    "text": "карточки рассадки, welcome-боксы, сладости с индивидуальным дизайном",
+    "quote": "карточки рассадки, welcome-боксы, сладости с индивидуальным дизайном",
+    "description_hash": "sha256:363062bf0c9c20fa5e01501b657e527b807b042a9c2b672b7274da39c8a9c511",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90006",
+    "fact_id": "HK-90006-feature-v1",
+    "text": "фотомагниты, значки, блокноты с логотипом компании",
+    "quote": "фотомагниты, значки, блокноты с логотипом компании",
+    "description_hash": "sha256:0aff0ca192344bd95d5d6830236b90be49ef963e4bfae18b1011222b056a14a7",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90007",
+    "fact_id": "HK-90007-feature-v1",
+    "text": "каждая церемония собирается индивидуально под историю молодожёнов",
+    "quote": "каждая церемония собирается индивидуально под историю молодожёнов",
+    "description_hash": "sha256:e8f2a77c34bbbf1170205c0bd2ef96471e35fdb20d551920973a6e7fc8c9ee19",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90008",
+    "fact_id": "HK-90008-feature-v1",
+    "text": "Спокойная, тёплая подача",
+    "quote": "Спокойная, тёплая подача",
+    "description_hash": "sha256:0ccaaf818fe384d5e767f2a266d6eddd9bc3cc91aa3884b39c69974f1f950758",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90009",
+    "fact_id": "HK-90009-feature-v1",
+    "text": "интерактивная фотобудка с мгновенной печатью снимков и брендированной рамкой",
+    "quote": "интерактивная фотобудка с мгновенной печатью снимков и брендированной рамкой",
+    "description_hash": "sha256:be6d20fbc74218540389282c4cc42590ffbc55c7c8f1c97365a2ccaba93daba6",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90010",
+    "fact_id": "HK-90010-feature-v1",
+    "text": "зеркальная фотобудка с сенсорным экраном, анимацией и печатью фото",
+    "quote": "зеркальная фотобудка с сенсорным экраном, анимацией и печатью фото",
+    "description_hash": "sha256:21b958ba5b04bdc8af9129283ad0050f4301d6eee426873ecfe53809a7b02288",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90011",
+    "fact_id": "HK-90011-feature-v1",
+    "text": "Панорамные окна, вместимость зала до 200 гостей, свой кейтеринг и парковка для гостей мероприятия",
+    "quote": "Панорамные окна, вместимость зала до 200 гостей, свой кейтеринг и парковка для гостей мероприятия",
+    "description_hash": "sha256:75ac7ab88cd98dbca236e69f6e3e88236bc686655c12c49dbc5410a07b8a49c6",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90012",
+    "fact_id": "HK-90012-feature-v1",
+    "text": "есть техническое оснащение для презентаций",
+    "quote": "есть техническое оснащение для презентаций",
+    "description_hash": "sha256:8bc8c516d600360d0cf895ef99d31da60f2d5c6788d60c8d26f1efebb80226bb",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90013",
+    "fact_id": "HK-90013-feature-v1",
+    "text": "Сольные выступления на скрипке и саксофоне",
+    "quote": "Сольные выступления на скрипке и саксофоне",
+    "description_hash": "sha256:a1a0b714d88c4838b79b0decc6b9e561d1a96997823ecd8ccfbba566e043926d",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-91112",
+    "fact_id": "HK-91112-feature-v1",
+    "text": "Мои кадры — не про позы, а про состояние",
+    "quote": "Мои кадры — не про позы, а про состояние",
+    "description_hash": "sha256:9f9fdd26a64a427249372978dd68f816d05a4c8dfe58585e805ea48dcbf96fa8",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-92824",
+    "fact_id": "HK-92824-feature-v1",
+    "text": "Авторский проект Ичиго и Рукии",
+    "quote": "Авторский проект Ичиго и Рукии",
+    "description_hash": "sha256:524b9e2ff9483d103710d972de1cf3980ea9e2095b8ad24fdf3624b14f1486ee",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-97041",
+    "fact_id": "HK-97041-feature-v1",
+    "text": "современно, интеллигентно , с юмором",
+    "quote": "современно, интеллигентно , с юмором",
+    "description_hash": "sha256:350edd4f145023c450f412b132c982dff9e7f7c34132dd7bc8571e5787950ecf",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-97737",
+    "fact_id": "HK-97737-feature-v1",
+    "text": "Специализируюсь на свадебной и семейной съёмке, love story, мероприятиях и портретных фотосессиях",
+    "quote": "Специализируюсь на свадебной и семейной съёмке, love story, мероприятиях и портретных фотосессиях",
+    "description_hash": "sha256:1c1904d1143e69d3eb6e865006c2c98626ca8c6721e343ec58e009f170f0bd98",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-98562",
+    "fact_id": "HK-98562-feature-v1",
+    "text": "направляю, подсказываю позирование и создаю спокойную атмосферу в кадре",
+    "quote": "направляю, подсказываю позирование и создаю спокойную атмосферу в кадре",
+    "description_hash": "sha256:e14a1c0b30c6a8378cfae503741b23a092529da4df705faf432952c32df971b1",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-99701",
+    "fact_id": "HK-99701-feature-v1",
+    "text": "живописными панорамами гор, просторными зелёными полями",
+    "quote": "живописными панорамами гор, просторными зелёными полями",
+    "description_hash": "sha256:fdda35a1322e24163681c68d2535b46e0d8b46e946bb8b0a42e29fb024f7d2fe",
+    "review_status": "approved",
+    "kind": "feature"
+  },
+  {
+    "vendor_id": "HK-90009",
+    "fact_id": "HK-90009-condition-v1",
+    "text": "В описании указана аренда от 3 часов; требуется уточнение условий",
+    "quote": "аренда от 3 часов",
+    "description_hash": "sha256:be6d20fbc74218540389282c4cc42590ffbc55c7c8f1c97365a2ccaba93daba6",
+    "review_status": "approved",
+    "kind": "condition"
+  },
+  {
+    "vendor_id": "HK-90006",
+    "fact_id": "HK-90006-condition-v1",
+    "text": "В описании указан минимальный тираж от 20 штук; требуется уточнение условий",
+    "quote": "Минимальный тираж от 20 штук",
+    "description_hash": "sha256:0aff0ca192344bd95d5d6830236b90be49ef963e4bfae18b1011222b056a14a7",
+    "review_status": "approved",
+    "kind": "condition"
+  }
+]
