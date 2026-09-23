@@ -1,7 +1,7 @@
-import type { Recommendation, SearchMetadata, SearchRequest, SearchResponse } from "./contracts";
+import type { AlternativesResponse, Recommendation, SearchMetadata, SearchRequest, SearchResponse } from "./contracts";
 import { CatalogUnavailableError, ValidationApiError } from "./errors";
 import type { RecommendationGateway } from "./recommendationGateway";
-import { searchResponseSchema } from "./schemas";
+import { alternativesResponseSchema, searchResponseSchema } from "./schemas";
 
 export type MockFailure = "none" | "validation" | "catalog-unavailable";
 
@@ -142,6 +142,15 @@ const fixtures = new Map<string, SearchResponse>([
   ["Астана|Декоратор|корпоратив|2026-11-14|3000000||", noCatalog],
 ]);
 
+const alternativesFixtures = new Map<string, AlternativesResponse>([
+  ["Алматы|Ведущий|корпоратив|2026-11-14|100000|русский|6", {
+    alternatives: [
+      { type: "BUDGET", current_budget_kzt: 100_000, suggested_budget_kzt: 650_000, eligible_count: 4 },
+      { type: "DATE", current_date: "2026-11-14", suggested_date: "2026-11-15", distance_days: 1, eligible_count: 2 },
+    ],
+  }],
+]);
+
 export class MockRecommendationGateway implements RecommendationGateway {
   constructor(private readonly failure: MockFailure = "none") {}
 
@@ -157,6 +166,12 @@ export class MockRecommendationGateway implements RecommendationGateway {
       message: "Для этой комбинации в DEMO-режиме нет отдельной контрактной фикстуры. Условия не были изменены.",
     };
     return searchResponseSchema.parse(fixture) as SearchResponse;
+  }
+
+  async getAlternatives(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<AlternativesResponse> {
+    if (options?.signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    const fixture = alternativesFixtures.get(fixtureKey(request)) ?? { alternatives: [] };
+    return alternativesResponseSchema.parse(fixture) as AlternativesResponse;
   }
 }
 

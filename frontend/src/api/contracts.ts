@@ -10,6 +10,27 @@ export interface SearchRequest {
   language?: string | null;
 }
 
+export interface BudgetAlternative {
+  type: "BUDGET";
+  current_budget_kzt: number;
+  suggested_budget_kzt: number;
+  eligible_count: number;
+}
+
+export interface DateAlternative {
+  type: "DATE";
+  current_date: DateOnly;
+  suggested_date: DateOnly;
+  distance_days: number;
+  eligible_count: number;
+}
+
+export type SearchAlternative = BudgetAlternative | DateAlternative;
+
+export interface AlternativesResponse {
+  alternatives: SearchAlternative[];
+}
+
 export type SearchStatus = "MATCHES_FOUND" | "NO_CATALOG" | "NO_MATCH";
 
 export type ExclusionCode =

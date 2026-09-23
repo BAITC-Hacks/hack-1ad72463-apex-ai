@@ -1,4 +1,4 @@
-import type { SearchRequest, SearchResponse } from "./contracts";
+import type { AlternativesResponse, SearchRequest, SearchResponse } from "./contracts";
 import {
   CatalogUnavailableError,
   HttpApiError,
@@ -9,13 +9,14 @@ import {
   isAbortError,
 } from "./errors";
 import type { RecommendationGateway } from "./recommendationGateway";
-import { errorResponseSchema, searchResponseSchema } from "./schemas";
+import { alternativesResponseSchema, errorResponseSchema, searchResponseSchema } from "./schemas";
 
-function recommendationUrl(baseUrl: string): string {
+function recommendationUrl(baseUrl: string, suffix = ""): string {
   const normalized = baseUrl.replace(/\/$/, "");
-  return normalized.endsWith("/api")
+  const recommendationsRoot = normalized.endsWith("/api")
     ? `${normalized}/recommendations`
     : `${normalized}/api/recommendations`;
+  return `${recommendationsRoot}${suffix}`;
 }
 
 export class HttpRecommendationGateway implements RecommendationGateway {
@@ -72,6 +73,50 @@ export class HttpRecommendationGateway implements RecommendationGateway {
       ) {
         throw error;
       }
+      throw new NetworkApiError();
+    } finally {
+      window.clearTimeout(timeout);
+      options?.signal?.removeEventListener("abort", onExternalAbort);
+    }
+  }
+
+  async getAlternatives(request: SearchRequest, options?: { signal?: AbortSignal }): Promise<AlternativesResponse> {
+    const controller = new AbortController();
+    let timedOut = false;
+    const onExternalAbort = () => controller.abort();
+    options?.signal?.addEventListener("abort", onExternalAbort, { once: true });
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, this.timeoutMs);
+
+    try {
+      const response = await fetch(recommendationUrl(this.baseUrl, "/alternatives"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(request),
+        signal: controller.signal,
+      });
+
+      const payload: unknown = await response.json().catch(() => {
+        throw new InvalidApiResponseError();
+      });
+
+      if (response.ok) {
+        const parsed = alternativesResponseSchema.safeParse(payload);
+        if (!parsed.success) throw new InvalidApiResponseError();
+        return parsed.data as AlternativesResponse;
+      }
+
+      const errorPayload = errorResponseSchema.safeParse(payload);
+      throw new HttpApiError(
+        response.status,
+        errorPayload.success ? errorPayload.data.error.code : "ALTERNATIVES_UNAVAILABLE",
+      );
+    } catch (error) {
+      if (timedOut) throw new TimeoutApiError();
+      if (options?.signal?.aborted || isAbortError(error)) throw error;
+      if (error instanceof InvalidApiResponseError || error instanceof HttpApiError) throw error;
       throw new NetworkApiError();
     } finally {
       window.clearTimeout(timeout);
